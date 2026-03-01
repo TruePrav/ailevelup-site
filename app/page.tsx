@@ -48,20 +48,20 @@ const STEPS = [
 const RESULTS = [
   {
     stat: "40%+ Ops Automated",
-    context: "retail business, 2 locations, live in production",
-    desc: "Daily reconciliation, supplier checks, inventory alerts — all running without human input.",
+    context: "Gaming retailer · 2 locations · Barbados · live since 2025",
+    desc: "Daily reconciliation, supplier checks, inventory alerts — all running without human input. Owner hasn't touched a spreadsheet since.",
     accent: "#4F46E5",
   },
   {
     stat: "Zero Missed Messages",
-    context: "24/7 support across channels",
-    desc: "AI handles every customer question on WhatsApp, Telegram, and web — even at 3am.",
+    context: "24/7 customer support · WhatsApp + Telegram + web",
+    desc: "AI handles every inbound question around the clock. Human team only steps in for complex issues. Response time: under 10 seconds.",
     accent: "#7C3AED",
   },
   {
-    stat: "Week 1 to Live",
-    context: "from discovery call to deployed agents",
-    desc: "No IT team needed. Most clients have agents running within the first week.",
+    stat: "7 Days to First Agent",
+    context: "from first call to live in production",
+    desc: "Discovery call Monday. Agents live the following week. No IT team, no long onboarding. Your data, your workflows — just automated.",
     accent: "#0EA5E9",
   },
 ];
@@ -139,27 +139,27 @@ export default function HomePage() {
             className="font-black leading-tight tracking-tight mb-6"
             style={{ fontSize: "clamp(2.4rem, 7vw, 4.5rem)", color: "#111827" }}
           >
-            Your Business Runs on Manual Work.
+            Your team is doing work
             <br />
-            <span className="hero-gradient-text">It Doesn&apos;t Have To.</span>
+            <span className="hero-gradient-text">AI should be doing.</span>
           </h1>
         </div>
 
         <p className="text-xl max-w-2xl mx-auto mb-10 leading-relaxed" style={{ color: "#6B7280" }}>
-          Most businesses still run on manual work. We build custom AI systems that handle the
-          repetitive stuff — so your team can focus on what actually grows the business.
+          Caribbean businesses are losing hours every week to repetitive tasks — reconciliation, customer questions,
+          content, reporting. We build AI agents that handle it all, so you don&apos;t have to.
         </p>
 
         <div className="flex flex-wrap justify-center gap-4 mb-16">
           <a
-            href="mailto:hello@ailevelup.ca?subject=Book a Free Call"
+            href="mailto:hello@ailevelup.ca?subject=Free Strategy Call"
             className="inline-block px-8 py-4 rounded-lg text-base font-semibold transition-opacity hover:opacity-90 text-white"
             style={{ background: "#4F46E5" }}
           >
-            Book a Free Call
+            Book a Free Strategy Call
           </a>
           <a
-            href="#how"
+            href="#agents"
             className="inline-block px-8 py-4 rounded-lg text-base font-semibold border transition-all"
             style={{
               borderColor: "#E5E7EB",
@@ -167,7 +167,7 @@ export default function HomePage() {
               background: "#FFFFFF",
             }}
           >
-            See How It Works
+            See Your AI Team →
           </a>
         </div>
 
@@ -177,10 +177,10 @@ export default function HomePage() {
           style={{ border: "1px solid #E5E7EB" }}
         >
           {[
-            "50+ Hours Saved Monthly",
-            "40%+ Ops Automated",
-            "24/7 Customer Coverage",
-            "Live in Under a Week",
+            "🏝️ Built for Caribbean Business",
+            "⚡ Live in 7 Days",
+            "🤖 Real AI — Not a Chatbot",
+            "✅ No IT Team Needed",
           ].map((stat) => (
             <div
               key={stat}
@@ -221,7 +221,7 @@ export default function HomePage() {
       </section>
 
       {/* ── AGENT DEMO CARDS ─────────────────────────────────────────────── */}
-      <section className="max-w-7xl mx-auto px-6 pb-20">
+      <section id="agents" className="max-w-7xl mx-auto px-6 pb-20">
         <div className="text-center mb-10">
           <h2 className="text-2xl font-bold mb-2" style={{ color: "#111827" }}>Meet Your AI Team</h2>
           <p className="text-sm max-w-lg mx-auto" style={{ color: "#6B7280" }}>
@@ -353,21 +353,33 @@ export default function HomePage() {
             }}
           >
             <h2 className="text-3xl font-bold mb-4" style={{ color: "#111827" }}>
-              Ready to stop doing everything manually?
+              Ready to automate the repetitive stuff?
             </h2>
             <p className="mb-8 leading-relaxed" style={{ color: "#6B7280" }}>
-              Get your custom AI agent network — built, trained, and deployed in days.
-              No IT team required. No long-term contract.
+              30-minute call. We map your biggest time sinks, tell you what AI can actually fix,
+              and give you a clear plan — no commitment, no sales pressure.
             </p>
-            <a
-              href="mailto:hello@ailevelup.ca?subject=Book a Free Strategy Call"
-              className="inline-block px-8 py-4 rounded-lg text-base font-semibold text-white transition-opacity hover:opacity-90"
-              style={{ background: "#4F46E5" }}
-            >
-              Book a Free Strategy Call
-            </a>
+            <div className="flex flex-wrap justify-center gap-4">
+              <a
+                href="mailto:hello@ailevelup.ca?subject=Free Strategy Call"
+                className="inline-block px-8 py-4 rounded-lg text-base font-semibold text-white transition-opacity hover:opacity-90"
+                style={{ background: "#4F46E5" }}
+              >
+                📧 Email Us
+              </a>
+              <a
+                href="https://wa.me/12463334444?text=Hi%2C%20I%27d%20like%20to%20learn%20more%20about%20ailevelup"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block px-8 py-4 rounded-lg text-base font-semibold transition-opacity hover:opacity-90"
+                style={{ background: "#25D366", color: "#FFFFFF" }}
+              >
+                💬 WhatsApp Us
+              </a>
+            </div>
             <p className="mt-6 text-xs" style={{ color: "#9CA3AF" }}>
-              No commitment required. We&apos;ll tell you honestly if AI is the right fit.
+              Serving businesses across Barbados, Trinidad, Jamaica &amp; the wider Caribbean.
+              We&apos;ll tell you honestly if AI is the right fit.
             </p>
           </div>
         </div>
@@ -382,15 +394,21 @@ export default function HomePage() {
           <div className="flex flex-wrap justify-center items-center gap-4 mb-3">
             <span className="font-semibold" style={{ color: "#374151" }}>ailevelup.ca</span>
             <span style={{ color: "#D1D5DB" }}>·</span>
+            <a href="mailto:hello@ailevelup.ca" className="transition-colors hover:text-gray-600">
+              hello@ailevelup.ca
+            </a>
+            <span style={{ color: "#D1D5DB" }}>·</span>
             <a
-              href="mailto:hello@ailevelup.ca"
+              href="https://wa.me/12463334444"
+              target="_blank"
+              rel="noopener noreferrer"
               className="transition-colors hover:text-gray-600"
             >
-              hello@ailevelup.ca
+              WhatsApp
             </a>
           </div>
           <p className="text-xs" style={{ color: "#D1D5DB" }}>
-            © 2026 ailevelup.ca
+            © 2026 ailevelup.ca · AI automation for Caribbean businesses
           </p>
         </div>
       </footer>
