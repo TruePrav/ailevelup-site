@@ -1,8 +1,20 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Fraunces, DM_Sans } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  weight: ["300", "700", "900"],
+  variable: "--font-fraunces",
+  display: "swap",
+});
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-dm-sans",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "ailevelup.ca — Your Custom AI Operations Team",
@@ -18,7 +30,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} antialiased`} style={{ background: "#FFFFFF" }}>
+      <body
+        className={`${fraunces.variable} ${dmSans.variable} antialiased`}
+        style={{ background: "#0A0A0A", color: "#F5F0E8", fontFamily: "var(--font-dm-sans), system-ui, sans-serif" }}
+      >
         {children}
       </body>
     </html>

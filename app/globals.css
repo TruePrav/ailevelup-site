@@ -2,32 +2,53 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── CSS Variables ────────────────────────────────────────────────────────── */
+:root {
+  --bg: #0A0A0A;
+  --bg-card: #141414;
+  --accent: #FF6B35;
+  --accent-2: #FFD166;
+  --text: #F5F0E8;
+  --text-muted: #8A8078;
+  --border: rgba(245, 240, 232, 0.08);
+}
+
 * { box-sizing: border-box; }
 
+html { scroll-behavior: smooth; }
+
 body {
-  background: #FFFFFF;
-  color: #111827;
+  background: var(--bg);
+  color: var(--text);
   overflow-x: hidden;
 }
 
-/* Smooth scrolling */
-html { scroll-behavior: smooth; }
+/* ── Grain Texture ────────────────────────────────────────────────────────── */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  pointer-events: none;
+  opacity: 0.35;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 128px 128px;
+}
 
-/* Custom scrollbar */
-.scrollbar-thin::-webkit-scrollbar { width: 4px; }
-.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
-.scrollbar-thumb-gray-700::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 2px; }
+/* ── Marquee Animation ────────────────────────────────────────────────────── */
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
 
-/* Gradient text helper */
-.gradient-text {
-  background: linear-gradient(90deg, #4F46E5, #7C3AED);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.marquee-track {
+  display: flex;
+  animation: marquee 25s linear infinite;
+  white-space: nowrap;
 }
 
 /* ── Keyframe Animations ──────────────────────────────────────────────────── */
-
 @keyframes typingPulse {
   0%, 80%, 100% { transform: translateY(0); opacity: 0.35; }
   40%            { transform: translateY(-3px); opacity: 1; }
@@ -48,41 +69,18 @@ html { scroll-behavior: smooth; }
   to   { opacity: 1; }
 }
 
-/* ── Hero FX ──────────────────────────────────────────────────────────────── */
-
-.hero-gradient-text {
-  background: linear-gradient(90deg, #4F46E5, #7C3AED);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Subtle decorative element behind hero headline — very light */
-.hero-soft-glow {
-  position: absolute;
-  inset: -20px;
-  z-index: -1;
-  filter: blur(80px);
-  background: radial-gradient(
-    circle at 50% 50%,
-    rgba(79, 70, 229, 0.06),
-    transparent 70%
-  );
-}
-
 /* ── Agent Card ───────────────────────────────────────────────────────────── */
-
 .console-card {
   position: relative;
   overflow: hidden;
-  background: #FFFFFF;
-  border: 1px solid #E5E7EB;
+  background: #141414;
+  border: 1px solid rgba(255, 107, 53, 0.15);
   transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .console-card:hover {
-  border-color: #4F46E5;
-  box-shadow: 0 4px 24px rgba(79, 70, 229, 0.10);
+  border-color: rgba(255, 107, 53, 0.35);
+  box-shadow: 0 4px 32px rgba(255, 107, 53, 0.08);
 }
 
 .console-inner {
@@ -91,12 +89,11 @@ html { scroll-behavior: smooth; }
 }
 
 /* ── Chat Components ──────────────────────────────────────────────────────── */
-
 .typing-dot {
   width: 5px;
   height: 5px;
   border-radius: 999px;
-  background: #9CA3AF;
+  background: #8A8078;
   animation: typingPulse 1.2s ease-in-out infinite;
 }
 .typing-dot:nth-child(2) { animation-delay: 0.15s; }
@@ -116,7 +113,25 @@ html { scroll-behavior: smooth; }
   animation: blink 1s step-end infinite;
 }
 
-/* Stats dividers */
-.stats-bar > * + * {
-  border-left: 1px solid #E5E7EB;
+/* ── Scrollbar ────────────────────────────────────────────────────────────── */
+.scrollbar-thin::-webkit-scrollbar { width: 4px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: #2A2A2A; border-radius: 2px; }
+
+/* ── Service card hover ───────────────────────────────────────────────────── */
+.service-card {
+  background: #141414;
+  transition: background 0.2s ease;
+}
+.service-card:hover {
+  background: #1a1a1a;
+}
+
+/* ── Who card hover ───────────────────────────────────────────────────────── */
+.who-card {
+  background: #141414;
+  transition: background 0.2s ease;
+}
+.who-card:hover {
+  background: #1a1a1a;
 }
