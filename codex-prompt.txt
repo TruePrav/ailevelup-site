@@ -1,0 +1,121 @@
+Complete visual and content revamp of this ailevelup.ca Next.js site. This sells AI agent services to Caribbean small businesses.
+
+GOALS:
+1. Brighter, more energetic color palette — less 'stealth hacker', more 'premium modern SaaS'
+2. Content that speaks directly to small business owners with clear ROI messaging
+3. Chat demos that feel fluid, alive, and impressive
+
+---
+
+1. COLOR OVERHAUL (globals.css + tailwind.config.js)
+
+Change body background from #050810 to #06091A
+Increase mesh blob opacity: blob 1 rgba(139,92,246,0.20), blob 2 rgba(0,212,255,0.18), blob 3 rgba(16,185,129,0.12)
+Make dot-grid overlay more visible (opacity 0.45)
+Make hero-soft-glow more intense (increase opacity values)
+Make console-card border spin conic gradient more vivid (increase opacity to 0.7)
+Card backgrounds: rgba(255,255,255,0.05)
+
+---
+
+2. HERO SECTION (app/page.tsx)
+
+Badge text: 'AI for Small Business - Caribbean Built'
+
+New headline (two lines, use gradient on second line):
+Line 1: 'Stop doing everything'
+Line 2 (gradient): 'yourself.'
+
+New subheadline:
+'Your AI team handles support, ops, and content so you can focus on growing your business.'
+
+Add 3 stat pills below subheadline:
+- 'Live in 2 weeks'
+- '24/7 response'  
+- 'Fully automated'
+
+Primary CTA: 'See Your AI Team in Action' (href="#agents")
+Secondary CTA: 'Talk to us first' (mailto:hello@ailevelup.ca)
+
+---
+
+3. NEW SECTION: 'Who This Is For' (add before the agent cards section, after StatsSection)
+
+Section title: 'Built for businesses like yours'
+
+Four cards in a 2x2 grid (single column mobile):
+Card 1: emoji=Storefront, title='Retailers', desc='Handle 100+ customer questions daily without hiring extra staff. Your AI handles it overnight.'
+Card 2: emoji=Restaurant, title='Restaurants', desc='Automate reservation questions, menu info, and order tracking. Zero calls for basic info.'
+Card 3: emoji=Package, title='eCommerce', desc='Instant support plus daily sales reconciliation — fully automated, no manual work.'
+Card 4: emoji=Target, title='Service Businesses', desc='Qualify leads, answer FAQs, and book appointments 24/7. You wake up to booked clients.'
+
+Each card: dark background, 2px left border in a distinct bright color (use #00D4FF, #BF5FFF, #10B981, #F59E0B), icon, bold title, description text.
+
+---
+
+4. AGENT CARDS - Make More Fluid (components/AgentCard.tsx)
+
+a) AUTO-DEMO: Use IntersectionObserver. When card enters viewport, after 1500ms delay automatically call sendMessage with the first prompt in config.prompts. Only fires once (use a ref flag). This shows the chat working without user interaction.
+
+b) Card height: change from 580 to 640
+
+c) Message bubbles:
+   - Assistant: background #1E2D4A, left border 2px solid with agent accent color
+   - User: keep accent color background (already correct)
+   - message-enter animation: increase from translateY(10px) to translateY(14px), make duration 0.3s
+
+d) Streaming cursor: when loading is true and last message is assistant, add a blinking cursor after the text content using a span with animation (blink 1s step-end infinite, opacity 0/1)
+
+e) Add Reset button in card header (small, text-xs, floated right in the header div) that calls setMessages back to the opening message array
+
+f) Quick-reply chips: only show the suggested prompts when messages.length === 1 (only opening message). Remove the 'Suggested prompts' label. Style them as rounded bubbles positioned below the opening message in the chat area, not in a separate panel section. Keep them in the current location if repositioning is complex - just remove the label and hide them after first user message.
+
+---
+
+5. NEW SECTION: 'Real Results' (add between How It Works and CTA sections)
+
+Section title: 'Real automation. Real results.'
+Subtitle: 'Deployed for Caribbean businesses just like yours.'
+
+Three result cards in a row (stack on mobile):
+Card 1: stat='40%+ ops automated', icon=lightning bolt, desc='Multi-agent network handling daily reconciliation, support, and content for a Barbados retailer.'
+Card 2: stat='Zero missed messages', icon=chat bubble, desc='AI support agent on WhatsApp answering instantly 24/7. No staff needed after hours.'
+Card 3: stat='Live in 14 days', icon=calendar check, desc='From discovery call to live agents in two weeks or less. No IT team required.'
+
+Each card: dark bg, bright stat text in gradient color, icon, description. Add a subtle glow on hover.
+
+---
+
+6. CTA SECTION - Upgrade
+
+Title: 'Your competitor is already using AI.'
+Subtitle: 'Get your custom AI ops team — built, trained, and deployed in 2 weeks.'
+
+Two buttons side by side:
+Primary: 'Book a free discovery call' (mailto:hello@ailevelup.ca?subject=Let us build my AI team)
+Secondary: 'See how it works' (href="#how")
+
+Fine print: 'No commitment. Most clients go live in 2 weeks. We will tell you honestly if AI is the right fit.'
+
+---
+
+7. NAV
+
+Add 'Results' link pointing to the results section (add id="results" to that section)
+Change 'Get Started' button to 'Book Free Call'
+
+---
+
+8. MOBILE RESPONSIVE
+
+Ensure agent cards stack to single column on mobile.
+'Who This Is For' cards: 2 columns on tablet, 1 on mobile.
+Hero font: use clamp for responsive sizing, ensure readable on small screens.
+Stat pills wrap properly on mobile.
+
+---
+
+AFTER ALL CHANGES:
+1. Run: npm run build
+2. Confirm build is clean with zero errors
+3. Then run: openclaw system event --text "Done: ailevelup revamp complete - build passing" --mode now

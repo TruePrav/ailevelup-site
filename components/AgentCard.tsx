@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Agent } from "@/lib/agents";
 
 interface Message {
@@ -12,56 +12,126 @@ interface Props {
   agent: Agent;
 }
 
-// Robot-human avatar — replace src with real images when available
-// Prompt for Midjourney: "professional AI assistant robot with human features, business casual, dark background, portrait, cinematic lighting"
-function AgentAvatar({ agent }: { agent: Agent }) {
+const AGENT_CONFIG: Record<string, { capabilities: string[]; prompts: string[]; chips: string[] }> = {
+  scout: {
+    capabilities: ["Customer Q&A", "WhatsApp", "Telegram", "24/7", "Multi-language"],
+    prompts: [
+      "How many support tickets do you handle daily?",
+      "What is your biggest customer pain point?",
+      "Show me what you can do",
+    ],
+    chips: ["24/7", "Instant", "No code"],
+  },
+  ledger: {
+    capabilities: ["Auto Reconcile", "Daily Reports", "Supplier Errors", "Low Stock Alerts", "Google Sheets"],
+    prompts: [
+      "How do you reconcile purchases?",
+      "Can you catch supplier errors?",
+      "How many hours does reconciliation take?",
+    ],
+    chips: ["Daily", "Accurate", "No code"],
+  },
+  content: {
+    capabilities: ["Trend Research", "Draft Posts", "Competitor Watch", "TikTok", "Instagram"],
+    prompts: [
+      "What platforms should I focus on?",
+      "Draft a post for my business",
+      "What is trending in retail?",
+    ],
+    chips: ["Fast", "Creative", "No code"],
+  },
+};
+
+const PLACEHOLDERS: Record<string, string[]> = {
+  scout: ["Ask about your support workflow...", "How many tickets per day?", "Which channels do you use?"],
+  ledger: ["Ask about reconciliation...", "Do supplier errors happen often?", "How long does closeout take?"],
+  content: ["Ask about your content strategy...", "Need social post ideas?", "What platform should you scale?"],
+};
+
+function AgentAvatar({ agent, accentColor }: { agent: Agent; accentColor: string }) {
   return (
     <div
-      className="relative mx-auto mb-4"
-      style={{ width: 100, height: 100 }}
+      className="w-11 h-11 rounded-full flex items-center justify-center text-lg flex-shrink-0"
+      style={{
+        background: `${accentColor}18`,
+        border: `1.5px solid ${accentColor}55`,
+      }}
     >
-      {/* Glow ring */}
-      <div
-        className="absolute inset-0 rounded-full blur-md opacity-40"
-        style={{ background: agent.color }}
-      />
-      {/* Avatar circle — swap this div for an <img> with your robot photo */}
-      <div
-        className="relative w-full h-full rounded-full flex items-center justify-center text-4xl border-2"
-        style={{
-          background: `radial-gradient(circle at 40% 35%, ${agent.gradientFrom}, #050810)`,
-          borderColor: agent.color,
-        }}
-      >
-        {agent.icon}
-      </div>
-      {/* Online indicator */}
-      <span
-        className="absolute bottom-1 right-1 w-4 h-4 rounded-full border-2 border-[#050810] bg-green-400"
-      />
+      {agent.icon}
+    </div>
+  );
+}
+
+function TypingIndicator() {
+  return (
+    <div
+      className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2"
+      style={{ background: "#F3F4F6" }}
+    >
+      <span className="typing-dot" />
+      <span className="typing-dot" />
+      <span className="typing-dot" />
     </div>
   );
 }
 
 export default function AgentCard({ agent }: Props) {
-  const [messages, setMessages] = useState<Message[]>([
-    { role: "assistant", content: agent.openingMessage },
-  ]);
+  const config = AGENT_CONFIG[agent.id] ?? AGENT_CONFIG.scout;
+  const rotatingPlaceholders = PLACEHOLDERS[agent.id] ?? PLACEHOLDERS.scout;
+  const accentColor = agent.id === "ledger" ? "#7C3AED" : agent.id === "content" ? "#0EA5E9" : agent.color;
+
+  const openingMessages: Message[] = [{ role: "assistant", content: agent.openingMessage }];
+
+  const [messages, setMessages] = useState<Message[]>(openingMessages);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const autoDemoFiredRef = useRef(false);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, loading]);
 
-  async function send() {
-    const text = input.trim();
-    if (!text || loading) return;
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setPlaceholderIndex((idx) => (idx + 1) % rotatingPlaceholders.length);
+    }, 2400);
+    return () => clearInterval(timer);
+  }, [rotatingPlaceholders.length]);
+
+  // Auto-demo: fire first prompt when card enters viewport
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && !autoDemoFiredRef.current) {
+            autoDemoFiredRef.current = true;
+            const firstPrompt = config.prompts[0];
+            setTimeout(() => {
+              void sendMessage(firstPrompt);
+            }, 1500);
+            observer.disconnect();
+          }
+        }
+      },
+      { threshold: 0.4 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function sendMessage(text: string) {
+    const trimmed = text.trim();
+    if (!trimmed || loading) return;
 
     const newMessages: Message[] = [
       ...messages,
-      { role: "user", content: text },
+      { role: "user", content: trimmed },
     ];
     setMessages(newMessages);
     setInput("");
@@ -79,8 +149,7 @@ export default function AgentCard({ agent }: Props) {
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let reply = "";
-
-      setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+      let started = false;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -88,11 +157,16 @@ export default function AgentCard({ agent }: Props) {
         reply += decoder.decode(value, { stream: true });
         setMessages((prev) => {
           const updated = [...prev];
+          if (!started) {
+            updated.push({ role: "assistant", content: reply });
+            started = true;
+            return updated;
+          }
           updated[updated.length - 1] = { role: "assistant", content: reply };
           return updated;
         });
       }
-    } catch (err) {
+    } catch {
       setMessages((prev) => [
         ...prev,
         { role: "assistant", content: "Sorry, something went wrong. Try again." },
@@ -102,78 +176,205 @@ export default function AgentCard({ agent }: Props) {
     }
   }
 
+  function submitFromInput() {
+    void sendMessage(input);
+  }
+
+  function sendPrompt(prompt: string) {
+    setInput(prompt);
+    void sendMessage(prompt);
+  }
+
+  function resetChat() {
+    setMessages(openingMessages);
+    setInput("");
+  }
+
+  const isLastMessageAssistant =
+    messages.length > 0 && messages[messages.length - 1].role === "assistant";
+
   return (
     <div
-      className="flex flex-col rounded-2xl border overflow-hidden"
-      style={{
-        background: "linear-gradient(160deg, #0d1424 0%, #080b14 100%)",
-        borderColor: `${agent.color}33`,
-        boxShadow: `0 0 40px ${agent.color}15`,
-        height: 520,
-      }}
+      ref={cardRef}
+      className="console-card group rounded-2xl transition-all duration-200 hover:-translate-y-1"
+      style={{ height: 620 }}
     >
-      {/* Header */}
-      <div className="p-5 pb-3 text-center border-b" style={{ borderColor: `${agent.color}22` }}>
-        <AgentAvatar agent={agent} />
-        <h3 className="text-white font-bold text-lg leading-tight">{agent.name}</h3>
-        <span
-          className="inline-block mt-1 px-2 py-0.5 text-xs rounded-full font-medium"
-          style={{ background: `${agent.color}22`, color: agent.color }}
-        >
-          {agent.role}
-        </span>
-        <p className="mt-2 text-xs text-gray-400 leading-relaxed">{agent.tagline}</p>
-      </div>
-
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin scrollbar-thumb-gray-700">
-        {messages.map((m, i) => (
-          <div
-            key={i}
-            className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
-          >
-            <div
-              className={`max-w-[85%] px-3 py-2 rounded-xl text-sm leading-relaxed ${
-                m.role === "user"
-                  ? "text-white rounded-br-sm"
-                  : "text-gray-200 rounded-bl-sm"
-              }`}
-              style={
-                m.role === "user"
-                  ? { background: agent.color, color: "#000" }
-                  : { background: "#151c2e" }
-              }
-            >
-              {m.content || (
-                <span className="opacity-50 animate-pulse">Thinking…</span>
-              )}
+      <div className="console-inner h-full flex flex-col rounded-2xl">
+        {/* Header */}
+        <div className="p-4" style={{ borderBottom: "1px solid #F3F4F6" }}>
+          <div className="flex items-start justify-between gap-3">
+            <AgentAvatar agent={agent} accentColor={accentColor} />
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="font-bold text-lg leading-tight" style={{ color: "#111827" }}>{agent.name}</h3>
+                <span
+                  className="px-2 py-0.5 text-[11px] rounded-full font-semibold"
+                  style={{ background: `${accentColor}15`, color: accentColor }}
+                >
+                  {agent.role}
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 mt-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-[11px] font-semibold" style={{ color: "#10B981" }}>LIVE</span>
+              </div>
+              <p className="text-xs mt-1" style={{ color: "#6B7280" }}>{agent.tagline}</p>
+            </div>
+            <div className="flex flex-col gap-1 items-end">
+              <button
+                onClick={resetChat}
+                className="text-xs transition-colors px-2 py-0.5 rounded"
+                style={{
+                  color: "#9CA3AF",
+                  border: "1px solid #E5E7EB",
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = "#374151"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = "#9CA3AF"; }}
+              >
+                Reset
+              </button>
+              {config.chips.map((chip) => (
+                <span
+                  key={chip}
+                  className="px-2 py-0.5 text-[10px] rounded-full font-semibold"
+                  style={{
+                    color: accentColor,
+                    border: `1px solid ${accentColor}44`,
+                    background: `${accentColor}0f`,
+                  }}
+                >
+                  {chip}
+                </span>
+              ))}
             </div>
           </div>
-        ))}
-        <div ref={bottomRef} />
-      </div>
+        </div>
 
-      {/* Input */}
-      <div className="p-3 border-t" style={{ borderColor: `${agent.color}22` }}>
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && send()}
-            placeholder="Reply…"
-            disabled={loading}
-            className="flex-1 bg-[#0f1525] border rounded-xl px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 disabled:opacity-50"
-            style={{ borderColor: `${agent.color}44`, ["--tw-ring-color" as string]: agent.color }}
-          />
-          <button
-            onClick={send}
-            disabled={loading || !input.trim()}
-            className="px-4 py-2 rounded-xl text-sm font-semibold disabled:opacity-40 transition-opacity"
-            style={{ background: agent.color, color: "#000" }}
-          >
-            {loading ? "…" : "Send"}
-          </button>
+        {/* Capabilities */}
+        <div className="px-4 pt-3 pb-2 overflow-hidden" style={{ borderBottom: "1px solid #F3F4F6" }}>
+          <div className="flex gap-2 overflow-x-auto whitespace-nowrap scrollbar-thin scrollbar-thumb-gray-700">
+            {config.capabilities.map((item) => (
+              <span
+                key={item}
+                className="text-[11px] px-3 py-1 rounded-full"
+                style={{
+                  color: "#374151",
+                  border: "1px solid #E5E7EB",
+                  background: "#F9FAFB",
+                }}
+              >
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Chat area */}
+        <div
+          className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin scrollbar-thumb-gray-700"
+          style={{ background: "#FAFAFA" }}
+        >
+          {messages.map((m, i) => (
+            <div
+              key={`${m.role}-${i}`}
+              className={`message-enter flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
+            >
+              {m.role === "assistant" && (
+                <span
+                  className="mr-2 mt-1 text-xs w-6 h-6 rounded-full inline-flex items-center justify-center flex-shrink-0"
+                  style={{ background: `${accentColor}15` }}
+                >
+                  {agent.icon}
+                </span>
+              )}
+              <div
+                className="max-w-[78%] px-3 py-2 rounded-xl text-sm leading-relaxed"
+                style={
+                  m.role === "user"
+                    ? {
+                        background: accentColor,
+                        color: "#FFFFFF",
+                        borderBottomRightRadius: "4px",
+                      }
+                    : {
+                        background: "#FFFFFF",
+                        color: "#374151",
+                        border: "1px solid #E5E7EB",
+                        borderBottomLeftRadius: "4px",
+                      }
+                }
+              >
+                {m.content}
+                {loading && isLastMessageAssistant && i === messages.length - 1 && m.role === "assistant" && (
+                  <span className="streaming-cursor" />
+                )}
+              </div>
+            </div>
+          ))}
+
+          {/* Quick-reply chips — only when only opening message exists */}
+          {messages.length === 1 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {config.prompts.map((prompt) => (
+                <button
+                  key={prompt}
+                  onClick={() => sendPrompt(prompt)}
+                  disabled={loading}
+                  className="text-xs px-3 py-1.5 rounded-full transition-colors disabled:opacity-40"
+                  style={{
+                    color: accentColor,
+                    border: `1px solid ${accentColor}55`,
+                    background: `${accentColor}0a`,
+                  }}
+                >
+                  {prompt}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {loading && (
+            <div className="message-enter flex justify-start">
+              <span
+                className="mr-2 mt-1 text-xs w-6 h-6 rounded-full inline-flex items-center justify-center flex-shrink-0"
+                style={{ background: `${accentColor}15` }}
+              >
+                {agent.icon}
+              </span>
+              <TypingIndicator />
+            </div>
+          )}
+          <div ref={bottomRef} />
+        </div>
+
+        {/* Input */}
+        <div className="p-3" style={{ borderTop: "1px solid #E5E7EB" }}>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && submitFromInput()}
+              placeholder={rotatingPlaceholders[placeholderIndex]}
+              disabled={loading}
+              className="flex-1 rounded-xl px-3 py-2 text-sm focus:outline-none disabled:opacity-60 transition-shadow"
+              style={{
+                background: "#F9FAFB",
+                border: `1.5px solid #E5E7EB`,
+                color: "#111827",
+              }}
+              onFocus={(e) => { e.currentTarget.style.borderColor = `${accentColor}88`; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = "#E5E7EB"; }}
+            />
+            <button
+              onClick={submitFromInput}
+              disabled={loading || !input.trim()}
+              className="px-4 py-2 rounded-xl text-sm font-semibold disabled:opacity-40 transition-opacity text-white"
+              style={{ background: accentColor }}
+            >
+              Send
+            </button>
+          </div>
         </div>
       </div>
     </div>

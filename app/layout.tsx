@@ -5,11 +5,11 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "ailevelup.ca — Chat with your new 24/7 AI team",
+  title: "ailevelup.ca — Your Custom AI Operations Team",
   description:
-    "Custom AI agents for Caribbean businesses. Customer support, reconciliation, content — all automated. Try them live now.",
+    "Custom AI agents for small businesses. Customer support, reconciliation, content — all automated. Try them live now.",
   openGraph: {
-    title: "Chat with your new 24/7 AI team now",
+    title: "Your Custom AI Operations Team",
     description: "Meet Scout, Ledger, and Aria — your AI operations team. Try them live.",
     siteName: "ailevelup.ca",
   },
@@ -17,8 +17,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark">
-      <body className={`${inter.className} bg-[#050810] antialiased`}>{children}</body>
+    <html lang="en">
+      <body className={`${inter.className} antialiased`} style={{ background: "#FFFFFF" }}>
+        {children}
+      </body>
     </html>
   );
 }
