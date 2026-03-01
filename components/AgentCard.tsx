@@ -66,7 +66,7 @@ function TypingIndicator() {
   return (
     <div
       className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2"
-      style={{ background: "#1E1E1E" }}
+      style={{ background: "#F3F4F6" }}
     >
       <span className="typing-dot" />
       <span className="typing-dot" />
@@ -78,7 +78,7 @@ function TypingIndicator() {
 export default function AgentCard({ agent }: Props) {
   const config = AGENT_CONFIG[agent.id] ?? AGENT_CONFIG.scout;
   const rotatingPlaceholders = PLACEHOLDERS[agent.id] ?? PLACEHOLDERS.scout;
-  const accentColor = agent.id === "ledger" ? "#a855f7" : agent.id === "content" ? "#f59e0b" : agent.color;
+  const accentColor = agent.id === "ledger" ? "#7C3AED" : agent.id === "content" ? "#0EA5E9" : agent.color;
 
   const openingMessages: Message[] = [{ role: "assistant", content: agent.openingMessage }];
 
@@ -201,20 +201,15 @@ export default function AgentCard({ agent }: Props) {
     >
       <div className="console-inner h-full flex flex-col rounded-2xl">
         {/* Header */}
-        <div className="p-4" style={{ borderBottom: "1px solid rgba(245,240,232,0.06)" }}>
+        <div className="p-4" style={{ borderBottom: "1px solid #F3F4F6" }}>
           <div className="flex items-start justify-between gap-3">
             <AgentAvatar agent={agent} accentColor={accentColor} />
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h3
-                  className="font-bold text-lg leading-tight"
-                  style={{ color: "#F5F0E8", fontFamily: "var(--font-fraunces)" }}
-                >
-                  {agent.name}
-                </h3>
+                <h3 className="font-bold text-lg leading-tight" style={{ color: "#111827" }}>{agent.name}</h3>
                 <span
                   className="px-2 py-0.5 text-[11px] rounded-full font-semibold"
-                  style={{ background: `${accentColor}18`, color: accentColor }}
+                  style={{ background: `${accentColor}15`, color: accentColor }}
                 >
                   {agent.role}
                 </span>
@@ -223,18 +218,18 @@ export default function AgentCard({ agent }: Props) {
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                 <span className="text-[11px] font-semibold" style={{ color: "#10B981" }}>LIVE</span>
               </div>
-              <p className="text-xs mt-1" style={{ color: "#8A8078" }}>{agent.tagline}</p>
+              <p className="text-xs mt-1" style={{ color: "#6B7280" }}>{agent.tagline}</p>
             </div>
             <div className="flex flex-col gap-1 items-end">
               <button
                 onClick={resetChat}
                 className="text-xs transition-colors px-2 py-0.5 rounded"
                 style={{
-                  color: "#8A8078",
-                  border: "1px solid rgba(245,240,232,0.08)",
+                  color: "#9CA3AF",
+                  border: "1px solid #E5E7EB",
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.color = "#F5F0E8"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.color = "#8A8078"; }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = "#374151"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = "#9CA3AF"; }}
               >
                 Reset
               </button>
@@ -256,16 +251,16 @@ export default function AgentCard({ agent }: Props) {
         </div>
 
         {/* Capabilities */}
-        <div className="px-4 pt-3 pb-2 overflow-hidden" style={{ borderBottom: "1px solid rgba(245,240,232,0.06)" }}>
-          <div className="flex gap-2 overflow-x-auto whitespace-nowrap scrollbar-thin">
+        <div className="px-4 pt-3 pb-2 overflow-hidden" style={{ borderBottom: "1px solid #F3F4F6" }}>
+          <div className="flex gap-2 overflow-x-auto whitespace-nowrap scrollbar-thin scrollbar-thumb-gray-700">
             {config.capabilities.map((item) => (
               <span
                 key={item}
-                className="text-[11px] px-3 py-1 rounded-full flex-shrink-0"
+                className="text-[11px] px-3 py-1 rounded-full"
                 style={{
-                  color: "#8A8078",
-                  border: "1px solid rgba(245,240,232,0.08)",
-                  background: "rgba(245,240,232,0.04)",
+                  color: "#374151",
+                  border: "1px solid #E5E7EB",
+                  background: "#F9FAFB",
                 }}
               >
                 {item}
@@ -276,8 +271,8 @@ export default function AgentCard({ agent }: Props) {
 
         {/* Chat area */}
         <div
-          className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin"
-          style={{ background: "#0F0F0F" }}
+          className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin scrollbar-thumb-gray-700"
+          style={{ background: "#FAFAFA" }}
         >
           {messages.map((m, i) => (
             <div
@@ -287,7 +282,7 @@ export default function AgentCard({ agent }: Props) {
               {m.role === "assistant" && (
                 <span
                   className="mr-2 mt-1 text-xs w-6 h-6 rounded-full inline-flex items-center justify-center flex-shrink-0"
-                  style={{ background: `${accentColor}18` }}
+                  style={{ background: `${accentColor}15` }}
                 >
                   {agent.icon}
                 </span>
@@ -302,9 +297,9 @@ export default function AgentCard({ agent }: Props) {
                         borderBottomRightRadius: "4px",
                       }
                     : {
-                        background: "#1E1E1E",
-                        color: "#D4CFC8",
-                        border: "1px solid rgba(245,240,232,0.06)",
+                        background: "#FFFFFF",
+                        color: "#374151",
+                        border: "1px solid #E5E7EB",
                         borderBottomLeftRadius: "4px",
                       }
                 }
@@ -342,7 +337,7 @@ export default function AgentCard({ agent }: Props) {
             <div className="message-enter flex justify-start">
               <span
                 className="mr-2 mt-1 text-xs w-6 h-6 rounded-full inline-flex items-center justify-center flex-shrink-0"
-                style={{ background: `${accentColor}18` }}
+                style={{ background: `${accentColor}15` }}
               >
                 {agent.icon}
               </span>
@@ -353,7 +348,7 @@ export default function AgentCard({ agent }: Props) {
         </div>
 
         {/* Input */}
-        <div className="p-3" style={{ borderTop: "1px solid #2A2A2A" }}>
+        <div className="p-3" style={{ borderTop: "1px solid #E5E7EB" }}>
           <div className="flex gap-2">
             <input
               type="text"
@@ -364,12 +359,12 @@ export default function AgentCard({ agent }: Props) {
               disabled={loading}
               className="flex-1 rounded-xl px-3 py-2 text-sm focus:outline-none disabled:opacity-60 transition-shadow"
               style={{
-                background: "#1A1A1A",
-                border: "1.5px solid #2A2A2A",
-                color: "#F5F0E8",
+                background: "#F9FAFB",
+                border: `1.5px solid #E5E7EB`,
+                color: "#111827",
               }}
               onFocus={(e) => { e.currentTarget.style.borderColor = `${accentColor}88`; }}
-              onBlur={(e) => { e.currentTarget.style.borderColor = "#2A2A2A"; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = "#E5E7EB"; }}
             />
             <button
               onClick={submitFromInput}
