@@ -2,33 +2,43 @@
 @tailwind components;
 @tailwind utilities;
 
-* { box-sizing: border-box; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0A0A0A;
+  --bg-surface: #111111;
+  --bg-card: #161616;
+  --coral: #FF6B35;
+  --yellow: #FFD166;
+  --text: #F5F0E8;
+  --text-muted: #A09A8E;
+  --border: rgba(255,255,255,0.08);
+}
 
 body {
-  background: #FAFAFA;
-  color: #0D0D0D;
-  overflow-x: hidden;
+  background: var(--bg);
+  color: var(--text);
   font-family: var(--font-sans, system-ui, sans-serif);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 html { scroll-behavior: smooth; }
 
-/* ── Scrollbar ───────────────────────────────────────────────────────────── */
-.scrollbar-thin::-webkit-scrollbar { width: 4px; }
-.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
-.scrollbar-thin::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 2px; }
-
-/* ── Design tokens ───────────────────────────────────────────────────────── */
-:root {
-  --lime: #C5F135;
-  --lime-dark: #9BC420;
-  --ink: #0D0D0D;
-  --ink-soft: #1A1A1A;
-  --muted: #6B7280;
-  --border: #E5E7EB;
-  --white: #FFFFFF;
-  --offwhite: #FAFAFA;
-  --section-alt: #F4F9E8; /* very pale lime tint */
+/* ── Grain overlay ───────────────────────────────────────────────────────── */
+.grain {
+  position: relative;
+  overflow: hidden;
+}
+.grain::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.04;
+  pointer-events: none;
+  z-index: 1;
 }
 
 /* ── Marquee ─────────────────────────────────────────────────────────────── */
@@ -38,102 +48,34 @@ html { scroll-behavior: smooth; }
 }
 .marquee-track {
   display: flex;
-  animation: marquee 28s linear infinite;
+  width: max-content;
+  animation: marquee 24s linear infinite;
   white-space: nowrap;
 }
 .marquee-track:hover { animation-play-state: paused; }
 
-/* ── Hero ────────────────────────────────────────────────────────────────── */
-.hero-headline {
-  font-weight: 900;
-  line-height: 1.05;
-  letter-spacing: -0.03em;
-  color: var(--ink);
-}
-.hero-lime {
-  color: var(--lime-dark);
-  position: relative;
-}
-.hero-lime::after {
-  content: '';
-  position: absolute;
-  bottom: 2px;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: var(--lime);
-  border-radius: 2px;
-}
-
-/* ── Stat pill ───────────────────────────────────────────────────────────── */
-.stat-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  border-radius: 999px;
-  font-size: 13px;
-  font-weight: 600;
-  background: #F0F9E0;
-  color: #3A6B00;
-  border: 1px solid #C5F135;
-}
-
-/* ── Service card ────────────────────────────────────────────────────────── */
-.service-card {
-  background: #FFFFFF;
-  border: 1.5px solid var(--border);
-  border-radius: 16px;
-  padding: 28px;
-  transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
-  cursor: default;
-}
-.service-card:hover {
-  border-color: var(--lime);
-  box-shadow: 0 0 0 4px rgba(197,241,53,0.12);
-  transform: translateY(-2px);
-}
-
-/* ── Result card ─────────────────────────────────────────────────────────── */
-.result-card {
-  background: #FFFFFF;
-  border: 1.5px solid var(--border);
-  border-radius: 16px;
-  padding: 32px;
-  transition: border-color 0.2s;
-}
-.result-card:hover { border-color: var(--lime); }
-
-/* ── Who card ────────────────────────────────────────────────────────────── */
-.who-card {
-  background: #FFFFFF;
-  border: 1.5px solid var(--border);
-  border-radius: 14px;
-  padding: 24px;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-.who-card:hover {
-  border-color: var(--lime);
-  box-shadow: 0 4px 16px rgba(197,241,53,0.1);
-}
-
-/* ── Agent card ──────────────────────────────────────────────────────────── */
+/* ── Agent card shell ────────────────────────────────────────────────────── */
 .console-card {
   position: relative;
   overflow: hidden;
-  background: #FFFFFF;
-  border: 1.5px solid var(--border);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
   border-radius: 16px;
   transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
 }
 .console-card:hover {
-  border-color: var(--lime);
-  box-shadow: 0 4px 24px rgba(197, 241, 53, 0.12);
+  border-color: rgba(255, 107, 53, 0.3);
+  box-shadow: 0 4px 24px rgba(255, 107, 53, 0.08);
   transform: translateY(-2px);
 }
 .console-inner { position: relative; z-index: 1; }
 
-/* ── Chat components ─────────────────────────────────────────────────────── */
+/* ── Scrollbar ───────────────────────────────────────────────────────────── */
+.scrollbar-thin::-webkit-scrollbar { width: 4px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+/* ── Chat animations ─────────────────────────────────────────────────────── */
 @keyframes typingPulse {
   0%, 80%, 100% { transform: translateY(0); opacity: 0.35; }
   40%            { transform: translateY(-3px); opacity: 1; }
@@ -150,7 +92,7 @@ html { scroll-behavior: smooth; }
 .typing-dot {
   width: 5px; height: 5px;
   border-radius: 999px;
-  background: #9CA3AF;
+  background: #A09A8E;
   animation: typingPulse 1.2s ease-in-out infinite;
 }
 .typing-dot:nth-child(2) { animation-delay: 0.15s; }
@@ -161,17 +103,4 @@ html { scroll-behavior: smooth; }
   background: currentColor; margin-left: 2px;
   vertical-align: text-bottom;
   animation: blink 1s step-end infinite;
-}
-
-/* ── CTA section ─────────────────────────────────────────────────────────── */
-.cta-section {
-  background: var(--lime);
-  border-radius: 24px;
-  padding: 64px 48px;
-}
-
-/* ── Dark stats band ─────────────────────────────────────────────────────── */
-.stats-band {
-  background: var(--ink);
-  color: #FFFFFF;
 }

@@ -8,16 +8,13 @@ module.exports = {
   ],
   theme: {
     extend: {
-      colors: {
-        bg: "#06091A",
-        surface: "#0d1424",
-        card: "#141927",
-        border: "#1e2740",
-        purple: { DEFAULT: "#7c3aed", light: "#a855f7" },
-        cyan: "#00d4ff",
-      },
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
+        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "serif"],
+      },
+      colors: {
+        coral: "#FF6B35",
+        yellow: "#FFD166",
       },
     },
   },
