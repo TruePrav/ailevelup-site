@@ -5,14 +5,17 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg: #0A0A0A;
-  --bg-surface: #111111;
-  --bg-card: #161616;
-  --coral: #FF6B35;
-  --yellow: #FFD166;
-  --text: #F5F0E8;
-  --text-muted: #A09A8E;
-  --border: rgba(255,255,255,0.08);
+  --bg: #FFFFFF;
+  --bg-surface: #F5F7FF;
+  --bg-card: #FFFFFF;
+  --accent: #4F46E5;
+  --accent-soft: #6366F1;
+  --accent-light: #EEF2FF;
+  --accent-glow: rgba(79, 70, 229, 0.08);
+  --accent-border: rgba(79, 70, 229, 0.18);
+  --text: #111827;
+  --text-muted: #6B7280;
+  --border: rgba(0, 0, 0, 0.07);
 }
 
 body {
@@ -26,34 +29,6 @@ body {
 
 html { scroll-behavior: smooth; }
 
-/* ── Grain overlay ───────────────────────────────────────────────────────── */
-.grain {
-  position: relative;
-  overflow: hidden;
-}
-.grain::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-  opacity: 0.04;
-  pointer-events: none;
-  z-index: 1;
-}
-
-/* ── Marquee ─────────────────────────────────────────────────────────────── */
-@keyframes marquee {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-.marquee-track {
-  display: flex;
-  width: max-content;
-  animation: marquee 24s linear infinite;
-  white-space: nowrap;
-}
-.marquee-track:hover { animation-play-state: paused; }
-
 /* ── Agent card shell ────────────────────────────────────────────────────── */
 .console-card {
   position: relative;
@@ -61,11 +36,12 @@ html { scroll-behavior: smooth; }
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
   transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
 }
 .console-card:hover {
-  border-color: rgba(255, 107, 53, 0.3);
-  box-shadow: 0 4px 24px rgba(255, 107, 53, 0.08);
+  border-color: var(--accent-border);
+  box-shadow: 0 4px 24px rgba(79, 70, 229, 0.12);
   transform: translateY(-2px);
 }
 .console-inner { position: relative; z-index: 1; }
@@ -73,7 +49,7 @@ html { scroll-behavior: smooth; }
 /* ── Scrollbar ───────────────────────────────────────────────────────────── */
 .scrollbar-thin::-webkit-scrollbar { width: 4px; }
 .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
-.scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(79, 70, 229, 0.15); border-radius: 2px; }
 
 /* ── Chat animations ─────────────────────────────────────────────────────── */
 @keyframes typingPulse {
@@ -88,16 +64,21 @@ html { scroll-behavior: smooth; }
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 
 .typing-dot {
   width: 5px; height: 5px;
   border-radius: 999px;
-  background: #A09A8E;
+  background: var(--accent-soft);
   animation: typingPulse 1.2s ease-in-out infinite;
 }
 .typing-dot:nth-child(2) { animation-delay: 0.15s; }
 .typing-dot:nth-child(3) { animation-delay: 0.30s; }
 .message-enter { animation: messageIn 0.25s ease-out; }
+.fade-up { animation: fadeUp 0.5s ease-out both; }
 .streaming-cursor {
   display: inline-block; width: 2px; height: 1em;
   background: currentColor; margin-left: 2px;
