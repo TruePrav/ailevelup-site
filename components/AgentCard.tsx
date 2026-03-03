@@ -16,36 +16,66 @@ const AGENT_CONFIG: Record<string, { capabilities: string[]; prompts: string[]; 
   scout: {
     capabilities: ["Customer Q&A", "WhatsApp", "Telegram", "24/7", "Multi-language"],
     prompts: [
-      "How many support tickets do you handle daily?",
-      "What is your biggest customer pain point?",
-      "Show me what you can do",
+      "How many support messages do you get daily?",
+      "What are your most repeated customer questions?",
+      "Show me how you'd handle a complaint",
     ],
     chips: ["24/7", "Instant", "No code"],
   },
-  ledger: {
-    capabilities: ["Auto Reconcile", "Daily Reports", "Supplier Errors", "Low Stock Alerts", "Google Sheets"],
-    prompts: [
-      "How do you reconcile purchases?",
-      "Can you catch supplier errors?",
-      "How many hours does reconciliation take?",
-    ],
-    chips: ["Daily", "Accurate", "No code"],
-  },
-  content: {
+  aria: {
     capabilities: ["Trend Research", "Draft Posts", "Competitor Watch", "TikTok", "Instagram"],
     prompts: [
       "What platforms should I focus on?",
       "Draft a post for my business",
-      "What is trending in retail?",
+      "What's trending in my industry?",
     ],
-    chips: ["Fast", "Creative", "No code"],
+    chips: ["Daily", "Creative", "No code"],
+  },
+  trinity: {
+    capabilities: ["Screen Applicants", "Onboarding Packs", "Training Docs", "Job Postings", "Interview Prep"],
+    prompts: [
+      "How long does your hiring process take?",
+      "What's your onboarding like for new staff?",
+      "Write a job posting for a retail associate",
+    ],
+    chips: ["Fast", "Consistent", "No code"],
+  },
+  sterling: {
+    capabilities: ["Daily Reconciliation", "Margin Analysis", "Cost Leakage", "Cash Flow", "Supplier Audit"],
+    prompts: [
+      "Do you know your profit margin per product?",
+      "How often do supplier errors slip through?",
+      "What's your biggest unexpected cost lately?",
+    ],
+    chips: ["Daily", "Accurate", "No code"],
+  },
+  atlas: {
+    capabilities: ["Product Expertise", "Order Tracking", "Sales Analytics", "Post-Purchase Support", "Inventory Intel"],
+    prompts: [
+      "What's your best-selling product right now?",
+      "How do you currently handle order issues?",
+      "What product questions do customers ask most?",
+    ],
+    chips: ["Smart", "Full-stack", "No code"],
+  },
+  forge: {
+    capabilities: ["Automation Builds", "Tool Integrations", "Python & JS", "Web Maintenance", "AI Agent Deploy"],
+    prompts: [
+      "What's the most manual thing in your business?",
+      "What tools do you use that don't talk to each other?",
+      "Build me an automation for my workflow",
+    ],
+    chips: ["Fast", "Scalable", "Custom"],
   },
 };
 
 const PLACEHOLDERS: Record<string, string[]> = {
-  scout: ["Ask about your support workflow...", "How many tickets per day?", "Which channels do you use?"],
-  ledger: ["Ask about reconciliation...", "Do supplier errors happen often?", "How long does closeout take?"],
-  content: ["Ask about your content strategy...", "Need social post ideas?", "What platform should you scale?"],
+  scout:    ["Ask about your support workflow...", "How many messages per day?", "Which channels do you use?"],
+  aria:     ["Ask about your content strategy...", "Need social post ideas?", "What platform should you scale?"],
+  trinity:  ["Ask about your hiring process...", "Need a job posting?", "How consistent is your onboarding?"],
+  sterling: ["Ask about your finances...", "Do supplier errors slip through?", "What's your profit margin?"],
+  atlas:    ["Ask about your sales...", "What's your best seller?", "How do you track orders?"],
+  forge:    ["What would you automate?", "What tools need connecting?", "What's your most manual task?"],
 };
 
 function AgentAvatar({ agent, accentColor }: { agent: Agent; accentColor: string }) {
@@ -78,7 +108,7 @@ function TypingIndicator() {
 export default function AgentCard({ agent }: Props) {
   const config = AGENT_CONFIG[agent.id] ?? AGENT_CONFIG.scout;
   const rotatingPlaceholders = PLACEHOLDERS[agent.id] ?? PLACEHOLDERS.scout;
-  const accentColor = agent.id === "ledger" ? "#7C3AED" : agent.id === "content" ? "#0EA5E9" : agent.color;
+  const accentColor = agent.color;
 
   const openingMessages: Message[] = [{ role: "assistant", content: agent.openingMessage }];
 

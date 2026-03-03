@@ -27,7 +27,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-html { scroll-behavior: smooth; }
+/* scroll-behavior handled per-element via JS to prevent auto-scroll on hash in URL */
 
 /* ── Agent card shell ────────────────────────────────────────────────────── */
 .console-card {

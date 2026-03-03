@@ -1,5 +1,7 @@
 import AgentCard from "@/components/AgentCard";
 import { AGENTS } from "@/lib/agents";
+import ScrollToTop from "@/components/ScrollToTop";
+import ScrollButton from "@/components/ScrollButton";
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -17,6 +19,7 @@ const WHO_CARDS = [
 export default function HomePage() {
   return (
     <main style={{ background: "var(--bg)" }}>
+      <ScrollToTop />
 
       {/* ── 1. NAV ────────────────────────────────────────────────────────── */}
       <nav
@@ -35,13 +38,13 @@ export default function HomePage() {
             ailevelup
           </span>
           <div className="flex items-center gap-4">
-            <a
-              href="#agents"
+            <ScrollButton
+              targetId="agents"
               className="hidden md:block text-sm font-medium transition-colors hover:opacity-70"
-              style={{ color: "var(--text-muted)" }}
+              style={{ color: "var(--text-muted)", fontFamily: "inherit", fontSize: "inherit" }}
             >
-              Meet the agents
-            </a>
+              Talk to your agents
+            </ScrollButton>
             <a
               href="https://wa.me/12463334444"
               target="_blank"
@@ -88,29 +91,28 @@ export default function HomePage() {
                 className="text-5xl md:text-7xl leading-none mb-6"
                 style={{ fontFamily: "var(--font-display)", color: "var(--text)", letterSpacing: "-0.02em" }}
               >
-                Become the expert
+                Your business,
                 <br />
-                <span style={{ color: "var(--accent)" }}>on your business.</span>
+                <span style={{ color: "var(--accent)" }}>on autopilot.</span>
               </h1>
 
               <p
                 className="text-xl mb-10 max-w-lg leading-relaxed"
                 style={{ color: "var(--text-muted)" }}
               >
-                We deploy AI agents that handle your customers, reconcile your numbers,
-                and track your market — so you always know exactly what&apos;s happening,
-                before it becomes a problem.
+                We build and deploy AI agents for support, finance, ops, and marketing.
+                Done-for-you. Running 24/7.
               </p>
 
               <div className="flex flex-wrap gap-4">
-                <a
-                  href="#agents"
+                <ScrollButton
+                  targetId="agents"
                   className="px-8 py-4 rounded-full text-base font-bold transition-all hover:scale-105 flex items-center gap-2"
-                  style={{ background: "var(--accent)", color: "#FFFFFF" }}
+                  style={{ background: "var(--accent)", color: "#FFFFFF", fontFamily: "inherit", fontSize: "inherit" }}
                 >
-                  Meet the team
+                  Talk to your agents
                   <span>↓</span>
-                </a>
+                </ScrollButton>
                 <a
                   href="https://wa.me/12463334444"
                   target="_blank"
@@ -231,16 +233,17 @@ export default function HomePage() {
               className="text-5xl md:text-6xl mb-5"
               style={{ fontFamily: "var(--font-display)", color: "var(--text)", letterSpacing: "-0.02em" }}
             >
-              Your new team.
+              Talk to your agents.
               <br />
-              <span style={{ color: "var(--accent)" }}>Try them now.</span>
+              <span style={{ color: "var(--accent)" }}>Right now.</span>
             </h2>
             <p
               className="text-lg max-w-2xl mx-auto"
               style={{ color: "var(--text-muted)" }}
             >
-              These aren&apos;t demos. They&apos;re the same agents we deploy for real businesses.
-              Chat with them below — describe your business and see exactly what they&apos;d do for yours.
+              These aren&apos;t demos. They&apos;re barebones versions of agents already running for real businesses —
+              fine-tuned to their products, their voice, their operations.
+              Chat with them and see what a version trained on your business would look like.
             </p>
           </div>
 
@@ -255,10 +258,11 @@ export default function HomePage() {
             style={{ background: "var(--accent-light)", border: "1px solid var(--accent-border)" }}
           >
             <p className="text-base font-semibold mb-1" style={{ color: "var(--accent)" }}>
-              Every agent above is already running for a real business.
+              What you&apos;re talking to is the barebones version. Yours would be fully trained on your business.
             </p>
             <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-              We deploy, configure, and maintain them for you. No technical knowledge required.
+              Your agent learns your products, your tone, your customers, your data — and handles every business function that eats your time.
+              We build it, deploy it, and maintain it. No technical knowledge required.
             </p>
           </div>
         </div>

@@ -8,10 +8,10 @@ const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-sans", display: "
 export const metadata: Metadata = {
   title: "ailevelup.ca — Your Custom AI Operations Team",
   description:
-    "Custom AI agents for small businesses. Customer support, reconciliation, content — all automated. Try them live now.",
+    "Custom AI agents for every business function — support, finance, sales, operations, marketing and more. Fully trained to your business. Try them live now.",
   openGraph: {
     title: "Your Custom AI Operations Team",
-    description: "Meet Scout, Ledger, and Aria — your AI operations team. Try them live.",
+    description: "AI agents for every business function. Fully trained to your business. Try them live.",
     siteName: "ailevelup.ca",
   },
 };
