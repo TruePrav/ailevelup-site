@@ -14,7 +14,7 @@ interface Props {
 
 const AGENT_CONFIG: Record<string, { capabilities: string[]; prompts: string[]; chips: string[] }> = {
   scout: {
-    capabilities: ["Customer Q&A", "WhatsApp", "Telegram", "24/7", "Multi-language"],
+    capabilities: ["Customer Q&A", "Email & Chat", "Telegram", "24/7", "Multi-language"],
     prompts: [
       "How many support messages do you get daily?",
       "What are your most repeated customer questions?",
@@ -116,13 +116,18 @@ export default function AgentCard({ agent }: Props) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
-  const bottomRef = useRef<HTMLDivElement>(null);
-  const cardRef = useRef<HTMLDivElement>(null);
-  const autoDemoFiredRef = useRef(false);
+  const chatBodyRef = useRef<HTMLDivElement>(null);
+  const messagesRef = useRef<Message[]>(openingMessages);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const chatBody = chatBodyRef.current;
+    if (!chatBody) return;
+    chatBody.scrollTo({ top: chatBody.scrollHeight, behavior: "smooth" });
   }, [messages, loading]);
+
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -131,38 +136,13 @@ export default function AgentCard({ agent }: Props) {
     return () => clearInterval(timer);
   }, [rotatingPlaceholders.length]);
 
-  // Auto-demo: fire first prompt when card enters viewport
-  useEffect(() => {
-    const el = cardRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting && !autoDemoFiredRef.current) {
-            autoDemoFiredRef.current = true;
-            const firstPrompt = config.prompts[0];
-            setTimeout(() => {
-              void sendMessage(firstPrompt);
-            }, 1500);
-            observer.disconnect();
-          }
-        }
-      },
-      { threshold: 0.4 }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   async function sendMessage(text: string) {
     const trimmed = text.trim();
     if (!trimmed || loading) return;
 
-    const newMessages: Message[] = [
-      ...messages,
-      { role: "user", content: trimmed },
-    ];
+    const userMessage: Message = { role: "user", content: trimmed };
+    const newMessages: Message[] = [...messagesRef.current, userMessage];
+    messagesRef.current = newMessages;
     setMessages(newMessages);
     setInput("");
     setLoading(true);
@@ -185,22 +165,18 @@ export default function AgentCard({ agent }: Props) {
         const { done, value } = await reader.read();
         if (done) break;
         reply += decoder.decode(value, { stream: true });
-        setMessages((prev) => {
-          const updated = [...prev];
-          if (!started) {
-            updated.push({ role: "assistant", content: reply });
-            started = true;
-            return updated;
-          }
-          updated[updated.length - 1] = { role: "assistant", content: reply };
-          return updated;
-        });
+        const updated: Message[] = [...newMessages, { role: "assistant", content: reply }];
+        if (!started) started = true;
+        messagesRef.current = updated;
+        setMessages(updated);
       }
     } catch {
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: "Sorry, something went wrong. Try again." },
-      ]);
+      setMessages((prev) => {
+        const fallbackMessage: Message = { role: "assistant", content: "Sorry, something went wrong. Try again." };
+        const updated = [...prev, fallbackMessage];
+        messagesRef.current = updated;
+        return updated;
+      });
     } finally {
       setLoading(false);
     }
@@ -211,12 +187,12 @@ export default function AgentCard({ agent }: Props) {
   }
 
   function sendPrompt(prompt: string) {
-    setInput(prompt);
     void sendMessage(prompt);
   }
 
   function resetChat() {
     setMessages(openingMessages);
+    messagesRef.current = openingMessages;
     setInput("");
   }
 
@@ -224,11 +200,7 @@ export default function AgentCard({ agent }: Props) {
     messages.length > 0 && messages[messages.length - 1].role === "assistant";
 
   return (
-    <div
-      ref={cardRef}
-      className="console-card group rounded-2xl transition-all duration-200 hover:-translate-y-1"
-      style={{ height: 620 }}
-    >
+    <div className="console-card group rounded-2xl transition-all duration-200 hover:-translate-y-1" style={{ height: 620 }}>
       <div className="console-inner h-full flex flex-col rounded-2xl">
         {/* Header */}
         <div className="p-4" style={{ borderBottom: "1px solid #F3F4F6" }}>
@@ -301,6 +273,7 @@ export default function AgentCard({ agent }: Props) {
 
         {/* Chat area */}
         <div
+          ref={chatBodyRef}
           className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin scrollbar-thumb-gray-700"
           style={{ background: "#FAFAFA" }}
         >
@@ -374,7 +347,6 @@ export default function AgentCard({ agent }: Props) {
               <TypingIndicator />
             </div>
           )}
-          <div ref={bottomRef} />
         </div>
 
         {/* Input */}
