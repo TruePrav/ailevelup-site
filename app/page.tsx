@@ -5,8 +5,8 @@ import ScrollButton from "@/components/ScrollButton";
 
 const CALENDLY_URL = "https://calendly.com/praveen-ailevelup/30min";
 const DEMO_AGENT_SPECS = [
-  { sourceId: "ally", displayName: "Scout" },
-  { sourceId: "atlas", displayName: "Aria" },
+  { sourceId: "ally", displayName: "Ally" },
+  { sourceId: "atlas", displayName: "Atlas" },
   { sourceId: "forge", displayName: "Forge" },
 ] as const;
 const DEMO_AGENTS = DEMO_AGENT_SPECS.map((spec) => {
@@ -167,21 +167,21 @@ export default function HomePage() {
                   {[
                     {
                       icon: "CS",
-                      agent: "Scout",
+                      agent: "Ally",
                       status: "23 support tickets resolved",
                       sub: "0 unanswered · avg 47s response",
                       color: "#00d4ff",
                     },
                     {
                       icon: "FN",
-                      agent: "Ledger",
+                      agent: "Sterling",
                       status: "Sales reconciled",
                       sub: "$4,280 matched · 1 supplier discrepancy flagged",
                       color: "#a855f7",
                     },
                     {
                       icon: "MK",
-                      agent: "Aria",
+                      agent: "Atlas",
                       status: "3 posts drafted for review",
                       sub: "Top trend: AI automation for retail",
                       color: "#f59e0b",
@@ -272,7 +272,7 @@ export default function HomePage() {
           </div>
 
           <p className="mt-5 text-center text-sm" style={{ color: "var(--text-muted)" }}>
-            More agents in Sales, Accounting and HR are ready to go as well.
+            More agents in Sales, Finance, Operations, and HR are ready to go as well.
           </p>
 
           <div className="mt-10 rounded-2xl p-6 text-center" style={{ background: "var(--accent-light)", border: "1px solid var(--accent-border)" }}>
@@ -435,7 +435,7 @@ export default function HomePage() {
           style={{ borderTop: "1px solid var(--border)" }}
         >
           <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-            © 2026 ailevelup.ca - AI automation for businesses that want to grow.
+            © 2026 ailevelup.ca - AI automation for businesses that want to grow. By LEVELUP ENTERPRISES INC.
           </span>
         </div>
       </footer>
