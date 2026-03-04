@@ -255,8 +255,8 @@ export default function HomePage() {
               <span style={{ color: "var(--accent)" }}>Right now.</span>
             </h2>
             <p className="text-lg max-w-2xl mx-auto" style={{ color: "var(--text-muted)" }}>
-              These aren&apos;t demos. They&apos;re barebones versions of agents already running for real businesses - fine-tuned to their
-              products, their voice, their operations. Chat with them and see what a version trained on your business would look like.
+              These are live demos inspired by real business workflows. Chat with them to see how a version trained on your products, voice,
+              and operations could work for your business.
             </p>
           </div>
 
