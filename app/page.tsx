@@ -146,7 +146,6 @@ export default function HomePage() {
             <div className="lg:w-[45%] w-full">
               <div
                 style={{
-                  transform: "rotate(1.5deg)",
                   background: "#FFFFFF",
                   border: "1px solid var(--accent-border)",
                   borderRadius: "1.25rem",
@@ -238,7 +237,7 @@ export default function HomePage() {
               <div className="text-5xl font-bold mb-1" style={{ fontFamily: "var(--font-display)", color: "var(--accent)" }}>
                 {s.num}
               </div>
-              <div className="text-xs uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
+              <div className="text-xs uppercase tracking-wider max-w-[150px] mx-auto leading-snug" style={{ color: "var(--text-muted)" }}>
                 {s.label}
               </div>
             </div>
