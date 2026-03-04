@@ -4,10 +4,16 @@ import ScrollToTop from "@/components/ScrollToTop";
 import ScrollButton from "@/components/ScrollButton";
 
 const CALENDLY_URL = "https://calendly.com/praveen-ailevelup/30min";
-const DEMO_AGENT_IDS = ["scout", "aria", "forge"];
-const DEMO_AGENTS = DEMO_AGENT_IDS.map((id) => AGENTS.find((agent) => agent.id === id)).filter(
-  (agent): agent is (typeof AGENTS)[number] => Boolean(agent)
-);
+const DEMO_AGENT_SPECS = [
+  { sourceId: "ally", displayName: "Scout" },
+  { sourceId: "atlas", displayName: "Aria" },
+  { sourceId: "forge", displayName: "Forge" },
+] as const;
+const DEMO_AGENTS = DEMO_AGENT_SPECS.map((spec) => {
+  const agent = AGENTS.find((item) => item.id === spec.sourceId);
+  if (!agent) return null;
+  return { ...agent, name: spec.displayName };
+}).filter(Boolean) as (typeof AGENTS)[number][];
 
 const WHO_CARDS = [
   {
