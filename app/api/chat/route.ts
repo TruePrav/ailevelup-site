@@ -15,6 +15,8 @@ const ALLOWED_ORIGINS = (process.env.CORS_ALLOWED_ORIGINS ??
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
+const ALLOW_VERCEL_APP_ORIGINS =
+  (process.env.ALLOW_VERCEL_APP_ORIGINS ?? (process.env.VERCEL ? "true" : "false")) === "true";
 
 type ChatRole = "user" | "assistant";
 type ChatMessage = { role: ChatRole; content: string };
@@ -41,9 +43,23 @@ function normalizeOrigin(origin: string | null): string | null {
   }
 }
 
+function isAllowedOrigin(normalizedOrigin: string | null): boolean {
+  if (!normalizedOrigin) return false;
+  if (ALLOWED_ORIGINS.includes(normalizedOrigin)) return true;
+
+  if (!ALLOW_VERCEL_APP_ORIGINS) return false;
+
+  try {
+    const hostname = new URL(normalizedOrigin).hostname.toLowerCase();
+    return hostname === "vercel.app" || hostname.endsWith(".vercel.app");
+  } catch {
+    return false;
+  }
+}
+
 function getCorsHeaders(origin: string | null): HeadersInit {
   const normalized = normalizeOrigin(origin);
-  if (!normalized || !ALLOWED_ORIGINS.includes(normalized)) {
+  if (!normalized || !isAllowedOrigin(normalized)) {
     return { Vary: "Origin" };
   }
 
@@ -295,7 +311,7 @@ export async function OPTIONS(req: Request) {
   const origin = req.headers.get("origin");
   const normalizedOrigin = normalizeOrigin(origin);
 
-  if (!normalizedOrigin || !ALLOWED_ORIGINS.includes(normalizedOrigin)) {
+  if (!normalizedOrigin || !isAllowedOrigin(normalizedOrigin)) {
     return jsonError(403, "Origin not allowed", origin);
   }
 
@@ -312,7 +328,7 @@ export async function POST(req: Request) {
   const origin = req.headers.get("origin");
   const normalizedOrigin = normalizeOrigin(origin);
 
-  if (origin && (!normalizedOrigin || !ALLOWED_ORIGINS.includes(normalizedOrigin))) {
+  if (origin && (!normalizedOrigin || !isAllowedOrigin(normalizedOrigin))) {
     return jsonError(403, "Origin not allowed", origin);
   }
 
