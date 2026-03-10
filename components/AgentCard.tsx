@@ -13,69 +13,79 @@ interface Props {
 }
 
 const AGENT_CONFIG: Record<string, { capabilities: string[]; prompts: string[]; chips: string[] }> = {
-  scout: {
+  ally: {
     capabilities: ["Customer Q&A", "WhatsApp", "Telegram", "24/7", "Multi-language"],
     prompts: [
-      "How many support messages do you get daily?",
-      "What are your most repeated customer questions?",
-      "Show me how you'd handle a complaint",
+      "We get tons of the same questions on WhatsApp",
+      "It's just me handling everything right now",
+      "Customers message us after hours and get no reply",
     ],
     chips: ["24/7", "Instant", "No code"],
-  },
-  aria: {
-    capabilities: ["Trend Research", "Draft Posts", "Competitor Watch", "TikTok", "Instagram"],
-    prompts: [
-      "What platforms should I focus on?",
-      "Draft a post for my business",
-      "What's trending in my industry?",
-    ],
-    chips: ["Daily", "Creative", "No code"],
-  },
-  trinity: {
-    capabilities: ["Screen Applicants", "Onboarding Packs", "Training Docs", "Job Postings", "Interview Prep"],
-    prompts: [
-      "How long does your hiring process take?",
-      "What's your onboarding like for new staff?",
-      "Write a job posting for a retail associate",
-    ],
-    chips: ["Fast", "Consistent", "No code"],
   },
   sterling: {
     capabilities: ["Daily Reconciliation", "Margin Analysis", "Cost Leakage", "Cash Flow", "Supplier Audit"],
     prompts: [
-      "Do you know your profit margin per product?",
-      "How often do supplier errors slip through?",
-      "What's your biggest unexpected cost lately?",
+      "I never know my real margins until month-end",
+      "Supplier invoices don't always match what we ordered",
+      "Cash flow surprises keep catching me off guard",
     ],
     chips: ["Daily", "Accurate", "No code"],
   },
-  atlas: {
-    capabilities: ["Product Expertise", "Order Tracking", "Sales Analytics", "Post-Purchase Support", "Inventory Intel"],
+  nova: {
+    capabilities: ["Lead Qualification", "Auto Follow-ups", "CRM Updates", "Pipeline Tracking", "Lead Scoring"],
     prompts: [
-      "What's your best-selling product right now?",
-      "How do you currently handle order issues?",
-      "What product questions do customers ask most?",
+      "Leads come in but nobody follows up fast enough",
+      "I don't know which leads are actually serious",
+      "We lose deals because we forget to follow up",
+    ],
+    chips: ["Auto", "Smart", "No code"],
+  },
+  pulse: {
+    capabilities: ["Ops Monitoring", "Daily Briefings", "Task Tracking", "Anomaly Alerts", "Auto Reports"],
+    prompts: [
+      "Checking inventory and staff schedules every morning",
+      "I spend hours making status update spreadsheets",
+      "Things fall through the cracks when I'm not looking",
+    ],
+    chips: ["Reliable", "Daily", "No code"],
+  },
+  atlas: {
+    capabilities: ["Trend Research", "Draft Posts", "Competitor Watch", "Content Calendar", "Brand Voice"],
+    prompts: [
+      "Instagram and TikTok — we post once a month if we're lucky",
+      "I never know what to post about",
+      "Our competitors post daily and we can't keep up",
     ],
     chips: ["Smart", "Full-stack", "No code"],
   },
   forge: {
     capabilities: ["Automation Builds", "Tool Integrations", "Python & JS", "Web Maintenance", "AI Agent Deploy"],
     prompts: [
-      "What's the most manual thing in your business?",
-      "What tools do you use that don't talk to each other?",
-      "Build me an automation for my workflow",
+      "Sending invoices and updating spreadsheets every week",
+      "Copying data between our POS and accounting software",
+      "Manually updating product listings across 3 platforms",
     ],
     chips: ["Fast", "Scalable", "Custom"],
+  },
+  barney: {
+    capabilities: ["Screen Applicants", "Onboarding Packs", "Training Docs", "Job Postings", "Interview Prep"],
+    prompts: [
+      "We get 50 resumes and no time to read them all",
+      "Every new hire gets a different onboarding experience",
+      "Writing job postings takes me half a day",
+    ],
+    chips: ["Fast", "Consistent", "No code"],
   },
 };
 
 const PLACEHOLDERS: Record<string, string[]> = {
-  scout:    ["Ask about your support workflow...", "How many messages per day?", "Which channels do you use?"],
-  aria:     ["Ask about your content strategy...", "Need social post ideas?", "What platform should you scale?"],
-  trinity:  ["Ask about your hiring process...", "Need a job posting?", "How consistent is your onboarding?"],
-  sterling: ["Ask about your finances...", "Do supplier errors slip through?", "What's your profit margin?"],
-  atlas:    ["Ask about your sales...", "What's your best seller?", "How do you track orders?"],
-  forge:    ["What would you automate?", "What tools need connecting?", "What's your most manual task?"],
+  ally:     ["Tell Ally about your support setup...", "What questions do customers ask most?", "Which channels do you use?"],
+  sterling: ["Tell Sterling about your finances...", "What's your biggest cost headache?", "How do you track margins?"],
+  nova:     ["Tell Nova about your sales process...", "How do leads come in?", "What happens after a lead comes in?"],
+  pulse:    ["Tell Pulse about your daily ops...", "What takes the most time each morning?", "What falls through the cracks?"],
+  atlas:    ["Tell Atlas about your content...", "What platforms are you on?", "How often do you post?"],
+  forge:    ["Tell Forge what to automate...", "What's the most repetitive task?", "What tools need connecting?"],
+  barney:   ["Tell Barney about your hiring...", "How do you onboard new hires?", "What's your biggest HR pain?"],
 };
 
 function AgentAvatar({ agent, accentColor }: { agent: Agent; accentColor: string }) {
@@ -106,8 +116,8 @@ function TypingIndicator() {
 }
 
 export default function AgentCard({ agent }: Props) {
-  const config = AGENT_CONFIG[agent.id] ?? AGENT_CONFIG.scout;
-  const rotatingPlaceholders = PLACEHOLDERS[agent.id] ?? PLACEHOLDERS.scout;
+  const config = AGENT_CONFIG[agent.id] ?? AGENT_CONFIG.ally;
+  const rotatingPlaceholders = PLACEHOLDERS[agent.id] ?? PLACEHOLDERS.ally;
   const accentColor = agent.color;
 
   const openingMessages: Message[] = [{ role: "assistant", content: agent.openingMessage }];
