@@ -1,4 +1,5 @@
 ﻿import AgentCard from "@/components/AgentCard";
+import CaseStudies from "@/components/CaseStudies";
 import { AGENTS } from "@/lib/agents";
 import ScrollToTop from "@/components/ScrollToTop";
 import ScrollButton from "@/components/ScrollButton";
@@ -286,6 +287,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <CaseStudies />
 
       <section id="how" className="py-24 px-6" style={{ background: "var(--bg-surface)", borderTop: "1px solid var(--border)" }}>
         <div className="max-w-7xl mx-auto">
