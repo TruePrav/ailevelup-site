@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { Agent } from "@/lib/agents";
 
@@ -88,16 +89,46 @@ const PLACEHOLDERS: Record<string, string[]> = {
   barney:   ["Tell Barney about your hiring...", "How do you onboard new hires?", "What's your biggest HR pain?"],
 };
 
-function AgentAvatar({ agent, accentColor }: { agent: Agent; accentColor: string }) {
+const AGENT_AVATARS: Partial<Record<string, { src: string; position?: string; fit?: "cover" | "contain"; inset?: string }>> = {
+  ally: { src: "/agents/ally.jpg" },
+  atlas: { src: "/agents/atlas-new.png", position: "center 40%" },
+  forge: { src: "/agents/forge.jpg" },
+};
+
+function AgentAvatar({
+  agent,
+  accentColor,
+  size = "header",
+}: {
+  agent: Agent;
+  accentColor: string;
+  size?: "header" | "bubble";
+}) {
+  const avatar = AGENT_AVATARS[agent.id];
+  const isHeader = size === "header";
+
   return (
     <div
-      className="w-11 h-11 rounded-full flex items-center justify-center text-lg flex-shrink-0"
+      className={`relative overflow-hidden rounded-full flex items-center justify-center flex-shrink-0 ${isHeader ? "w-14 h-14" : "w-8 h-8 text-xs"}`}
       style={{
         background: `${accentColor}18`,
-        border: `1.5px solid ${accentColor}55`,
+        border: `${isHeader ? 2 : 1.5}px solid ${accentColor}55`,
       }}
     >
-      {agent.icon}
+      {avatar ? (
+        <div className="absolute inset-0" style={{ inset: avatar.inset ?? "0%" }}>
+          <Image
+            src={avatar.src}
+            alt={`${agent.name} avatar`}
+            fill
+            sizes={isHeader ? "56px" : "32px"}
+            className={avatar.fit === "contain" ? "object-contain" : "object-cover"}
+            style={{ objectPosition: avatar.position ?? "center" }}
+          />
+        </div>
+      ) : (
+        <span className={isHeader ? "text-lg" : undefined}>{agent.icon}</span>
+      )}
     </div>
   );
 }
@@ -215,7 +246,7 @@ export default function AgentCard({ agent }: Props) {
         {/* Header */}
         <div className="p-4" style={{ borderBottom: "1px solid #F3F4F6" }}>
           <div className="flex items-start justify-between gap-3">
-            <AgentAvatar agent={agent} accentColor={accentColor} />
+            <AgentAvatar agent={agent} accentColor={accentColor} size="header" />
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className="font-bold text-lg leading-tight" style={{ color: "#111827" }}>{agent.name}</h3>
@@ -293,12 +324,9 @@ export default function AgentCard({ agent }: Props) {
               className={`message-enter flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
             >
               {m.role === "assistant" && (
-                <span
-                  className="mr-2 mt-1 text-xs w-6 h-6 rounded-full inline-flex items-center justify-center flex-shrink-0"
-                  style={{ background: `${accentColor}15` }}
-                >
-                  {agent.icon}
-                </span>
+                <div className="mr-2 mt-1">
+                  <AgentAvatar agent={agent} accentColor={accentColor} size="bubble" />
+                </div>
               )}
               <div
                 className="max-w-[78%] px-3 py-2 rounded-xl text-sm leading-relaxed"
@@ -348,12 +376,9 @@ export default function AgentCard({ agent }: Props) {
 
           {loading && (
             <div className="message-enter flex justify-start">
-              <span
-                className="mr-2 mt-1 text-xs w-6 h-6 rounded-full inline-flex items-center justify-center flex-shrink-0"
-                style={{ background: `${accentColor}15` }}
-              >
-                {agent.icon}
-              </span>
+              <div className="mr-2 mt-1">
+                <AgentAvatar agent={agent} accentColor={accentColor} size="bubble" />
+              </div>
               <TypingIndicator />
             </div>
           )}

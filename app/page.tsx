@@ -1,5 +1,6 @@
 ﻿import AgentCard from "@/components/AgentCard";
 import { AGENTS } from "@/lib/agents";
+import Image from "next/image";
 import ScrollToTop from "@/components/ScrollToTop";
 import ScrollButton from "@/components/ScrollButton";
 
@@ -14,6 +15,30 @@ const DEMO_AGENTS = DEMO_AGENT_SPECS.map((spec) => {
   if (!agent) return null;
   return { ...agent, name: spec.displayName };
 }).filter(Boolean) as (typeof AGENTS)[number][];
+
+const HERO_AGENT_BRIEFS = [
+  {
+    image: "/agents/ally.jpg",
+    agent: "Ally",
+    status: "23 support tickets resolved",
+    sub: "0 unanswered · avg 47s response",
+    color: "#00d4ff",
+  },
+  {
+    image: "/agents/forge.jpg",
+    agent: "Forge",
+    status: "3 workflows ran automatically",
+    sub: "Invoices sent · POS synced · weekly report delivered",
+    color: "#60A5FA",
+  },
+  {
+    image: "/agents/atlas-new.png",
+    agent: "Atlas",
+    status: "3 posts drafted for review",
+    sub: "Top trend: AI automation for retail",
+    color: "#f59e0b",
+  },
+];
 
 const WHO_CARDS = [
   {
@@ -62,12 +87,16 @@ export default function HomePage() {
         }}
       >
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <span
-            className="text-xl font-bold tracking-tight"
-            style={{ fontFamily: "var(--font-display)", color: "var(--accent)", fontStyle: "italic" }}
-          >
-            ailevelup
-          </span>
+          <div className="relative h-12 w-[210px] sm:h-14 sm:w-[244px]">
+            <Image
+              src="/ailevelup-logo.png"
+              alt="AILevelUp logo"
+              fill
+              sizes="(max-width: 640px) 210px, 244px"
+              className="object-contain object-left"
+              priority
+            />
+          </div>
 
           <div className="flex items-center gap-4">
             <a
@@ -164,39 +193,23 @@ export default function HomePage() {
                 </div>
 
                 <div className="space-y-3">
-                  {[
-                    {
-                      icon: "CS",
-                      agent: "Ally",
-                      status: "23 support tickets resolved",
-                      sub: "0 unanswered · avg 47s response",
-                      color: "#00d4ff",
-                    },
-                    {
-                      icon: "FN",
-                      agent: "Sterling",
-                      status: "Sales reconciled",
-                      sub: "$4,280 matched · 1 supplier discrepancy flagged",
-                      color: "#a855f7",
-                    },
-                    {
-                      icon: "MK",
-                      agent: "Atlas",
-                      status: "3 posts drafted for review",
-                      sub: "Top trend: AI automation for retail",
-                      color: "#f59e0b",
-                    },
-                  ].map((item) => (
+                  {HERO_AGENT_BRIEFS.map((item) => (
                     <div
                       key={item.agent}
                       className="flex items-start gap-3 p-3 rounded-xl"
                       style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}
                     >
                       <div
-                        className="w-9 h-9 rounded-full flex items-center justify-center text-base flex-shrink-0 mt-0.5"
-                        style={{ background: `${item.color}15` }}
+                        className="relative w-10 h-10 rounded-full overflow-hidden flex-shrink-0 mt-0.5"
+                        style={{ background: `${item.color}15`, border: `1.5px solid ${item.color}44` }}
                       >
-                        {item.icon}
+                        <Image
+                          src={item.image}
+                          alt={`${item.agent} avatar`}
+                          fill
+                          sizes="40px"
+                          className="object-cover"
+                        />
                       </div>
                       <div>
                         <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
@@ -420,9 +433,15 @@ export default function HomePage() {
 
       <footer className="py-12 px-6" style={{ background: "#F8F9FF", borderTop: "1px solid var(--border)" }}>
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
-          <span className="text-xl font-bold" style={{ fontFamily: "var(--font-display)", color: "var(--accent)", fontStyle: "italic" }}>
-            ailevelup
-          </span>
+          <div className="relative h-10 w-[180px] sm:h-12 sm:w-[210px]">
+            <Image
+              src="/ailevelup-logo.png"
+              alt="AILevelUp logo"
+              fill
+              sizes="(max-width: 640px) 180px, 210px"
+              className="object-contain object-left"
+            />
+          </div>
           <div className="flex items-center gap-6">
             <a href="mailto:info@ailevelup.ca" className="text-sm transition-opacity hover:opacity-70" style={{ color: "var(--text-muted)" }}>
               info@ailevelup.ca
