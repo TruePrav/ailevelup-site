@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 const colors = {
   draft:  { bg: "#F3F4F6", fg: "#6B7280" },
@@ -22,9 +23,15 @@ export default function StatusSelect({
   const handleChange = async (next: "draft" | "sent" | "signed") => {
     setSaving(true);
     try {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      const authHeaders: Record<string, string> = { "Content-Type": "application/json" };
+      if (session?.access_token) {
+        authHeaders["Authorization"] = `Bearer ${session.access_token}`;
+      }
       await fetch(`/api/proposals/${proposalId}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders,
         body: JSON.stringify({ status: next }),
       });
       setStatus(next);

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Proposal, Deliverable, TimelineEntry, TermItem, SetupFeeItem } from "@/types/proposal";
+import { createClient } from "@/lib/supabase/client";
 
 type Mode = "create" | "edit";
 
@@ -249,11 +250,18 @@ export default function ProposalForm({ initial, mode }: Props) {
         terms: (form.terms ?? []).filter((t) => t.label.trim() || t.value.trim()),
       };
 
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      const authHeaders: Record<string, string> = { "Content-Type": "application/json" };
+      if (session?.access_token) {
+        authHeaders["Authorization"] = `Bearer ${session.access_token}`;
+      }
+
       const url = mode === "create" ? "/api/proposals" : `/api/proposals/${form.id}`;
       const method = mode === "create" ? "POST" : "PUT";
       const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders,
         body: JSON.stringify(clean),
       });
       if (!res.ok) {
