@@ -305,8 +305,8 @@ function buildProposalHTML(proposal: Proposal, sigDataUrl: string, preparerSig: 
       <div class="signature-item">
         <div class="name">${((proposal.preparedBy ?? "Praveen Mahtani") + "").split('|')[0].trim()}</div>
         <div class="role">AILevelUp</div>
-        <div style="margin-top:16px;min-height:100px;display:flex;align-items:center;justify-content:center;">
-          ${preparerSig ? `<img src="${preparerSig}" alt="signature" style="max-width:260px;max-height:90px;filter:brightness(0);" />` : ""}
+        <div style="margin-top:16px;min-height:100px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:2px;">
+          ${preparerSig ? `<img src="${preparerSig}" alt="signature" style="max-width:260px;max-height:80px;filter:brightness(0);display:block;" />` : ""}
         </div>
         <div class="signature-line" style="margin-top:4px;"></div>
         <div class="date-label"><span>${proposal.date}</span></div>

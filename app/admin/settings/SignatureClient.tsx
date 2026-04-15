@@ -126,6 +126,47 @@ export default function SignatureClient({
     setError("");
   };
 
+  const cropToInk = (source: HTMLCanvasElement): string => {
+    const ctx = source.getContext("2d");
+    if (!ctx) return source.toDataURL("image/png");
+    const { width, height } = source;
+    const img = ctx.getImageData(0, 0, width, height).data;
+
+    let minX = width;
+    let minY = height;
+    let maxX = -1;
+    let maxY = -1;
+
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const alpha = img[(y * width + x) * 4 + 3];
+        if (alpha > 0) {
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+      }
+    }
+
+    if (maxX < 0) return source.toDataURL("image/png"); // empty
+
+    // Small padding so lines aren't flush with the edge
+    const pad = 4;
+    const sx = Math.max(0, minX - pad);
+    const sy = Math.max(0, minY - pad);
+    const sw = Math.min(width, maxX + pad) - sx;
+    const sh = Math.min(height, maxY + pad) - sy;
+
+    const out = document.createElement("canvas");
+    out.width = sw;
+    out.height = sh;
+    const outCtx = out.getContext("2d");
+    if (!outCtx) return source.toDataURL("image/png");
+    outCtx.drawImage(source, sx, sy, sw, sh, 0, 0, sw, sh);
+    return out.toDataURL("image/png");
+  };
+
   const handleSave = async () => {
     const canvas = canvasRef.current;
     if (!canvas || !hasDrawn) {
@@ -136,7 +177,7 @@ export default function SignatureClient({
     setError("");
     setMessage("");
     try {
-      const dataUrl = canvas.toDataURL("image/png");
+      const dataUrl = cropToInk(canvas);
       const res = await fetch("/api/admin/settings/signature", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
