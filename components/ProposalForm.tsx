@@ -100,6 +100,47 @@ const removeBtnStyle: React.CSSProperties = {
   flexShrink: 0,
 };
 
+// Defined outside ProposalForm so it has a stable reference and inputs don't lose focus on each keystroke
+function StringArrayEditor({
+  items,
+  label,
+  placeholder,
+  onAdd,
+  onChange,
+  onRemove,
+}: {
+  items: string[];
+  label: string;
+  placeholder: string;
+  onAdd: () => void;
+  onChange: (i: number, value: string) => void;
+  onRemove: (i: number) => void;
+}) {
+  return (
+    <div style={sectionStyle}>
+      <h2 className="text-lg font-bold mb-4" style={{ fontFamily: "var(--font-display)", color: "var(--text)" }}>
+        {label}
+      </h2>
+      {items.map((item, i) => (
+        <div key={i} className="flex gap-2 mb-2">
+          <input
+            style={inputStyle}
+            value={item}
+            onChange={(e) => onChange(i, e.target.value)}
+            placeholder={placeholder}
+          />
+          <button type="button" onClick={() => onRemove(i)} style={removeBtnStyle}>
+            ×
+          </button>
+        </div>
+      ))}
+      <button type="button" onClick={onAdd} style={addBtnStyle}>
+        + Add
+      </button>
+    </div>
+  );
+}
+
 export default function ProposalForm({ initial, mode }: Props) {
   const router = useRouter();
   const [form, setForm] = useState<Proposal>(initial ?? emptyProposal());
@@ -266,41 +307,6 @@ export default function ProposalForm({ initial, mode }: Props) {
     { key: "action", label: "Client Action" },
   ];
 
-  const StringArrayEditor = ({
-    keyName,
-    label,
-    placeholder,
-  }: {
-    keyName: "scopeIncluded" | "scopeExcluded" | "pricingIncludes" | "whatWeNeed" | "clientProvides" | "ctaSteps";
-    label: string;
-    placeholder: string;
-  }) => {
-    const items = form[keyName] ?? [];
-    return (
-      <div style={sectionStyle}>
-        <h2 className="text-lg font-bold mb-4" style={{ fontFamily: "var(--font-display)", color: "var(--text)" }}>
-          {label}
-        </h2>
-        {items.map((item, i) => (
-          <div key={i} className="flex gap-2 mb-2">
-            <input
-              style={inputStyle}
-              value={item}
-              onChange={(e) => setStrAt(keyName, i, e.target.value)}
-              placeholder={placeholder}
-            />
-            <button type="button" onClick={() => removeStrAt(keyName, i)} style={removeBtnStyle}>
-              ×
-            </button>
-          </div>
-        ))}
-        <button type="button" onClick={() => pushStr(keyName)} style={addBtnStyle}>
-          + Add
-        </button>
-      </div>
-    );
-  };
-
   return (
     <form onSubmit={handleSubmit}>
       <div className="flex gap-1 mb-6 p-1 rounded-xl flex-wrap" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
@@ -411,8 +417,14 @@ export default function ProposalForm({ initial, mode }: Props) {
             ))}
             <button type="button" onClick={pushDeliverable} style={addBtnStyle}>+ Add Deliverable</button>
           </div>
-          <StringArrayEditor keyName="scopeIncluded" label="Scope — Included" placeholder="Shopify store setup and theme customization" />
-          <StringArrayEditor keyName="scopeExcluded" label="Scope — Not Included" placeholder="Product photography" />
+          <StringArrayEditor
+            items={form.scopeIncluded ?? []} label="Scope — Included" placeholder="Shopify store setup and theme customization"
+            onAdd={() => pushStr("scopeIncluded")} onChange={(i, v) => setStrAt("scopeIncluded", i, v)} onRemove={(i) => removeStrAt("scopeIncluded", i)}
+          />
+          <StringArrayEditor
+            items={form.scopeExcluded ?? []} label="Scope — Not Included" placeholder="Product photography"
+            onAdd={() => pushStr("scopeExcluded")} onChange={(i, v) => setStrAt("scopeExcluded", i, v)} onRemove={(i) => removeStrAt("scopeExcluded", i)}
+          />
         </>
       )}
 
@@ -496,14 +508,23 @@ export default function ProposalForm({ initial, mode }: Props) {
               </div>
             </div>
           </div>
-          <StringArrayEditor keyName="pricingIncludes" label="Pricing Includes" placeholder="50 product pages with variants" />
+          <StringArrayEditor
+            items={form.pricingIncludes ?? []} label="Pricing Includes" placeholder="50 product pages with variants"
+            onAdd={() => pushStr("pricingIncludes")} onChange={(i, v) => setStrAt("pricingIncludes", i, v)} onRemove={(i) => removeStrAt("pricingIncludes", i)}
+          />
         </>
       )}
 
       {tab === "action" && (
         <>
-          <StringArrayEditor keyName="whatWeNeed" label="What We Need From Client" placeholder="Provide store admin access" />
-          <StringArrayEditor keyName="clientProvides" label="Client Provides" placeholder="All product photography" />
+          <StringArrayEditor
+            items={form.whatWeNeed ?? []} label="What We Need From Client" placeholder="Provide store admin access"
+            onAdd={() => pushStr("whatWeNeed")} onChange={(i, v) => setStrAt("whatWeNeed", i, v)} onRemove={(i) => removeStrAt("whatWeNeed", i)}
+          />
+          <StringArrayEditor
+            items={form.clientProvides ?? []} label="Client Provides" placeholder="All product photography"
+            onAdd={() => pushStr("clientProvides")} onChange={(i, v) => setStrAt("clientProvides", i, v)} onRemove={(i) => removeStrAt("clientProvides", i)}
+          />
           <div style={sectionStyle}>
             <h2 className="text-lg font-bold mb-4" style={{ fontFamily: "var(--font-display)", color: "var(--text)" }}>
               Terms
@@ -528,7 +549,10 @@ export default function ProposalForm({ initial, mode }: Props) {
             ))}
             <button type="button" onClick={pushTerm} style={addBtnStyle}>+ Add Term</button>
           </div>
-          <StringArrayEditor keyName="ctaSteps" label="Next Steps (CTA)" placeholder="Client reviews and confirms this proposal" />
+          <StringArrayEditor
+            items={form.ctaSteps ?? []} label="Next Steps (CTA)" placeholder="Client reviews and confirms this proposal"
+            onAdd={() => pushStr("ctaSteps")} onChange={(i, v) => setStrAt("ctaSteps", i, v)} onRemove={(i) => removeStrAt("ctaSteps", i)}
+          />
         </>
       )}
 
