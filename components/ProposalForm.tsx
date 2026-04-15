@@ -269,19 +269,12 @@ export default function ProposalForm({ initial, mode }: Props) {
         throw new Error(data.error || `Save failed (${res.status})`);
       }
       const data = await res.json();
-      console.log("[save] PUT response:", data);
-      alert(
-        `Save response:\n\n` +
-        `savedClientName: ${data.savedClientName ?? "(null)"}\n` +
-        `savedPricingAmount: ${data.savedPricingAmount ?? "(null)"}\n\n` +
-        `If the clientName above matches what you just entered, the DB IS updating.\n` +
-        `Click OK to stay on this page. Close the alert and check the view page manually.`
-      );
       const id = data.id ?? form.id;
       if (mode === "create") {
         setSavedId(id);
+      } else {
+        window.location.href = `/proposals/${id}`;
       }
-      // Stay on the edit page so user can debug.
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {

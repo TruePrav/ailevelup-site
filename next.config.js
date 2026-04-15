@@ -44,6 +44,24 @@ const nextConfig = {
           { key: "X-Content-Type-Options", value: "nosniff" },
         ],
       },
+      {
+        // Proposal pages — never cache (Cloudflare, Vercel edge, browser)
+        source: "/proposals/:path*",
+        headers: [
+          { key: "Cache-Control", value: "no-store, no-cache, must-revalidate, max-age=0" },
+          { key: "CDN-Cache-Control", value: "no-store" },
+          { key: "Cloudflare-CDN-Cache-Control", value: "no-store" },
+        ],
+      },
+      {
+        // Admin pages — never cache
+        source: "/admin/:path*",
+        headers: [
+          { key: "Cache-Control", value: "no-store, no-cache, must-revalidate, max-age=0" },
+          { key: "CDN-Cache-Control", value: "no-store" },
+          { key: "Cloudflare-CDN-Cache-Control", value: "no-store" },
+        ],
+      },
     ];
   },
 };
