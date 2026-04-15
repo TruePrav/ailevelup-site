@@ -3,9 +3,12 @@ import { headers } from "next/headers";
 import { Resend } from "resend";
 import { getProposal, saveProposal } from "@/lib/proposals";
 import { logAudit } from "@/lib/audit";
+import { renderProposalPdf } from "@/lib/pdf";
 
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
+export const maxDuration = 60;
+export const runtime = "nodejs";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -38,14 +41,31 @@ async function sendSignedEmail(opts: {
     const resend = new Resend(apiKey);
     const proposalUrl = `https://www.ailevelup.ca/proposals/${opts.proposalId}`;
 
-    // Turn the data URL into an attachment so the signature renders reliably
     const attachments: { filename: string; content: string }[] = [];
+
+    // Full signed proposal as PDF (best effort — if it fails, we still
+    // send the email without it rather than losing the notification)
+    try {
+      console.log("[proposal-signature] rendering PDF for", opts.proposalId);
+      const pdf = await renderProposalPdf(opts.proposalId);
+      attachments.push({
+        filename: `${opts.proposalId}-signed.pdf`,
+        content: pdf.toString("base64"),
+      });
+      console.log("[proposal-signature] PDF rendered", pdf.length, "bytes");
+    } catch (err) {
+      console.error("[proposal-signature] PDF render failed:", err);
+    }
+
+    // Signature PNG as a separate attachment for quick reference
     if (opts.signature.startsWith("data:image")) {
       const base64 = opts.signature.split(",")[1];
       if (base64) {
         attachments.push({ filename: `${opts.proposalId}-signature.png`, content: base64 });
       }
     }
+
+    const hasPdf = attachments.some((a) => a.filename.endsWith(".pdf"));
 
     const result = await resend.emails.send({
       from,
@@ -63,7 +83,9 @@ async function sendSignedEmail(opts: {
             <tr><td style="padding:4px 12px 4px 0;color:#64748b">Amount</td><td>${opts.pricingAmount} ${opts.pricingCurrency}</td></tr>
             <tr><td style="padding:4px 12px 4px 0;color:#64748b">Proposal</td><td><a href="${proposalUrl}">${proposalUrl}</a></td></tr>
           </table>
-          <p style="margin:16px 0 8px;color:#64748b;font-size:13px">Signature attached as PNG.</p>
+          <p style="margin:16px 0 8px;color:#64748b;font-size:13px">
+            ${hasPdf ? "Signed proposal attached as PDF" : "⚠️ PDF render failed — open the link above to view the signed proposal"}, signature attached as PNG.
+          </p>
         </div>
       `,
       attachments,
