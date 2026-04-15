@@ -51,5 +51,13 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
   };
 
   await saveProposal(updated);
-  return NextResponse.json({ id, message: "Proposal updated" });
+
+  // Read it back fresh from DB to prove the save took effect
+  const verify = await getProposal(id);
+  return NextResponse.json({
+    id,
+    message: "Proposal updated",
+    savedClientName: verify?.clientName ?? null,
+    savedPricingAmount: verify?.pricingAmount ?? null,
+  });
 }
