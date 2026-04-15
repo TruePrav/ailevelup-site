@@ -229,12 +229,15 @@ export default function ProposalForm({ initial, mode }: Props) {
     });
 
   const handleSubmit = async (e: React.FormEvent) => {
+    console.log("[save] 1. handleSubmit called, mode=", mode, "id=", form.id);
     e.preventDefault();
     setError("");
     if (!form.clientName.trim()) {
+      console.log("[save] 2. clientName empty, aborting");
       setError("Client name is required.");
       return;
     }
+    console.log("[save] 3. clientName ok:", form.clientName);
     setSubmitting(true);
     try {
       const clean = {
@@ -250,8 +253,10 @@ export default function ProposalForm({ initial, mode }: Props) {
         terms: (form.terms ?? []).filter((t) => t.label.trim() || t.value.trim()),
       };
 
+      console.log("[save] 4. cleaned form, getting supabase session");
       const supabase = createClient();
       const { data: { session } } = await supabase.auth.getSession();
+      console.log("[save] 5. session?", !!session, "token?", !!session?.access_token);
       const authHeaders: Record<string, string> = { "Content-Type": "application/json" };
       if (session?.access_token) {
         authHeaders["Authorization"] = `Bearer ${session.access_token}`;
@@ -259,24 +264,30 @@ export default function ProposalForm({ initial, mode }: Props) {
 
       const url = mode === "create" ? "/api/proposals" : `/api/proposals/${form.id}`;
       const method = mode === "create" ? "POST" : "PUT";
+      console.log("[save] 6. about to fetch", method, url);
       const res = await fetch(url, {
         method,
         headers: authHeaders,
         body: JSON.stringify(clean),
       });
+      console.log("[save] 7. fetch returned", res.status, res.ok);
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
+        console.log("[save] 8a. fetch not ok, error:", data);
         throw new Error(data.error || `Save failed (${res.status})`);
       }
       const data = await res.json();
+      console.log("[save] 8b. fetch ok, data:", data);
       const id = data.id ?? form.id;
       if (mode === "create") {
         setSavedId(id);
       } else {
+        console.log("[save] 9. redirecting to /proposals/", id);
         router.push(`/proposals/${id}`);
         router.refresh();
       }
     } catch (err) {
+      console.log("[save] ERROR:", err);
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setSubmitting(false);
