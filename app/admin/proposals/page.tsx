@@ -4,6 +4,8 @@ import { Proposal } from "@/types/proposal";
 import StatusSelect from "@/components/StatusSelect";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 export default async function AdminProposalsPage() {
   const proposals: Proposal[] = await listProposals();
@@ -13,6 +15,10 @@ export default async function AdminProposalsPage() {
       <div className="max-w-5xl mx-auto px-6 py-12">
         <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
           <div>
+            <div className="flex gap-4 text-sm mb-3" style={{ color: "var(--accent, #6366F1)" }}>
+              <Link href="/admin/api-keys">API keys →</Link>
+              <Link href="/admin/audit">Audit log →</Link>
+            </div>
             <h1
               className="text-4xl font-bold mb-2"
               style={{ fontFamily: "var(--font-display)", color: "var(--text)" }}
