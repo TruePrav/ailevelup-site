@@ -16,6 +16,7 @@ export default async function AdminProposalsPage() {
         <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
           <div>
             <div className="flex gap-4 text-sm mb-3" style={{ color: "var(--accent, #6366F1)" }}>
+              <Link href="/admin/settings">Settings →</Link>
               <Link href="/admin/api-keys">API keys →</Link>
               <Link href="/admin/audit">Audit log →</Link>
             </div>

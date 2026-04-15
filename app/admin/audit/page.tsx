@@ -31,7 +31,8 @@ export default async function AuditPage() {
         <div className="mb-8">
           <div className="flex gap-4 text-sm mb-3" style={{ color: "var(--accent, #6366F1)" }}>
             <Link href="/admin/proposals">← Proposals</Link>
-            <Link href="/admin/api-keys">← API keys</Link>
+            <Link href="/admin/settings">Settings</Link>
+            <Link href="/admin/api-keys">API keys</Link>
           </div>
           <h1
             className="text-4xl font-bold mb-2"

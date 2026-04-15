@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getProposal } from "@/lib/proposals";
+import { getPreparerSignature } from "@/lib/settings";
 import ProposalClient from "./ProposalClient";
 import { isAdmin } from "@/lib/admin";
 import type { Metadata } from "next";
@@ -28,11 +29,14 @@ export default async function ProposalPage({ params }: Props) {
   const proposal = await getProposal(id);
   if (!proposal) notFound();
 
-  const admin = await isAdmin();
+  const [admin, preparerSignature] = await Promise.all([
+    isAdmin(),
+    getPreparerSignature(),
+  ]);
 
   return (
     <>
-      <ProposalClient proposal={proposal} />
+      <ProposalClient proposal={proposal} preparerSignature={preparerSignature} />
       {admin && (
         <Link
           href={`/proposals/${id}/edit`}

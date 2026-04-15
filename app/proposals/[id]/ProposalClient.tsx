@@ -7,7 +7,7 @@ const today = new Date().toLocaleDateString("en-US", {
   month: "long", day: "numeric", year: "numeric",
 });
 
-function buildProposalHTML(proposal: Proposal, sigDataUrl: string) {
+function buildProposalHTML(proposal: Proposal, sigDataUrl: string, preparerSig: string | null) {
   const deliverablesRows = proposal.deliverables?.map(d =>
     `<tr><td><strong>${d.deliverable}</strong></td><td>${d.details}</td></tr>`
   ).join("") ?? "";
@@ -306,7 +306,7 @@ function buildProposalHTML(proposal: Proposal, sigDataUrl: string) {
         <div class="name">${((proposal.preparedBy ?? "Praveen Mahtani") + "").split('|')[0].trim()}</div>
         <div class="role">AILevelUp</div>
         <div style="margin-top:16px;min-height:100px;display:flex;align-items:center;justify-content:center;">
-          <img src="/assets/praveen-signature.png" alt="signature" style="max-width:260px;max-height:90px;filter:brightness(0);" onerror="this.style.display='none'" />
+          ${preparerSig ? `<img src="${preparerSig}" alt="signature" style="max-width:260px;max-height:90px;filter:brightness(0);" />` : ""}
         </div>
         <div class="signature-line" style="margin-top:4px;"></div>
         <div class="date-label"><span>${proposal.date}</span></div>
@@ -391,11 +391,17 @@ function buildProposalHTML(proposal: Proposal, sigDataUrl: string) {
 </html>`;
 }
 
-export default function ProposalClient({ proposal }: { proposal: Proposal }) {
+export default function ProposalClient({
+  proposal,
+  preparerSignature,
+}: {
+  proposal: Proposal;
+  preparerSignature?: string | null;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [sigDataUrl] = useState("");
 
-  const html = buildProposalHTML(proposal, sigDataUrl);
+  const html = buildProposalHTML(proposal, sigDataUrl, preparerSignature ?? null);
 
   return (
     <div ref={containerRef}>
