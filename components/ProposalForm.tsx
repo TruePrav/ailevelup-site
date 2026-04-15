@@ -474,6 +474,14 @@ export default function ProposalForm({ initial, mode }: Props) {
                 <label style={labelStyle}>Currency</label>
                 <input style={inputStyle} value={form.pricingCurrency ?? ""} onChange={(e) => set("pricingCurrency", e.target.value)} placeholder="USD" />
               </div>
+              <div>
+                <label style={labelStyle}>Alt Amount (optional)</label>
+                <input style={inputStyle} value={form.pricingAmountAlt ?? ""} onChange={(e) => set("pricingAmountAlt", e.target.value)} placeholder="$725" />
+              </div>
+              <div>
+                <label style={labelStyle}>Alt Currency (optional)</label>
+                <input style={inputStyle} value={form.pricingCurrencyAlt ?? ""} onChange={(e) => set("pricingCurrencyAlt", e.target.value)} placeholder="USD" />
+              </div>
               <div className="sm:col-span-2">
                 <label style={labelStyle}>Pricing Note</label>
                 <input style={inputStyle} value={form.pricingNote ?? ""} onChange={(e) => set("pricingNote", e.target.value)} placeholder="One-time build fee · 50/50 payment split" />

@@ -219,6 +219,7 @@ function buildProposalHTML(proposal: Proposal, sigDataUrl: string) {
         <h4>${proposal.pricingPhase}</h4>
         <div class="subtitle">${proposal.pricingSubtitle}</div>
         <div class="price">${proposal.pricingAmount} <span style="font-size:16px;color:var(--text-muted)">${proposal.pricingCurrency}</span></div>
+        ${proposal.pricingAmountAlt ? `<div style="font-size:13px;color:var(--text-muted);margin-top:-4px;margin-bottom:8px;">≈ ${proposal.pricingAmountAlt} ${proposal.pricingCurrencyAlt ?? ""} <span style="font-size:11px;opacity:0.7;">at current exchange rate</span></div>` : ""}
         <div class="price-label">${proposal.pricingNote}</div>
         <ul>${pricingItems}</ul>
       </div>

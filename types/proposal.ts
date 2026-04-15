@@ -34,6 +34,8 @@ export interface Proposal {
   pricingSubtitle?: string;
   pricingAmount?: string;
   pricingCurrency?: string;
+  pricingAmountAlt?: string;
+  pricingCurrencyAlt?: string;
   pricingNote?: string;
   pricingIncludes?: string[];
   paymentTerms?: string;
