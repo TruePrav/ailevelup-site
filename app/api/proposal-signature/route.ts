@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
         const fileName = `${proposalSlug}-${timestamp}.png`;
 
         const { error: uploadError } = await supabase.storage
-          .from("proposal-signatures")
+          .from("proposal_signatures")
           .upload(fileName, buffer, { contentType: "image/png", upsert: false });
 
         if (!uploadError) {

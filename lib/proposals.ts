@@ -10,12 +10,12 @@ function getSupabase() {
 
 export async function listProposals(): Promise<Proposal[]> {
   const { data, error } = await getSupabase()
-    .from("proposals")
+    .from("proposal_docs")
     .select("data")
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.error("[proposals] listProposals error:", error.message);
+    console.error("[proposal_docs] listProposals error:", error.message);
     return [];
   }
 
@@ -24,7 +24,7 @@ export async function listProposals(): Promise<Proposal[]> {
 
 export async function getProposal(id: string): Promise<Proposal | null> {
   const { data, error } = await getSupabase()
-    .from("proposals")
+    .from("proposal_docs")
     .select("data")
     .eq("id", id)
     .single();
@@ -35,14 +35,14 @@ export async function getProposal(id: string): Promise<Proposal | null> {
 
 export async function saveProposal(proposal: Proposal): Promise<void> {
   const { error } = await getSupabase()
-    .from("proposals")
+    .from("proposal_docs")
     .upsert(
       { id: proposal.id, data: proposal, updated_at: new Date().toISOString() },
       { onConflict: "id" }
     );
 
   if (error) {
-    console.error("[proposals] saveProposal error:", error.message);
+    console.error("[proposal_docs] saveProposal error:", error.message);
     throw new Error(error.message);
   }
 }
