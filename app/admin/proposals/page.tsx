@@ -1,17 +1,12 @@
 import Link from "next/link";
 import { listProposals } from "@/lib/proposals";
 import { Proposal } from "@/types/proposal";
+import StatusSelect from "@/components/StatusSelect";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminProposalsPage() {
   const proposals: Proposal[] = await listProposals();
-
-  const statusColor = (status?: string) => {
-    if (status === "signed") return { bg: "#D1FAE5", fg: "#065F46" };
-    if (status === "sent") return { bg: "#DBEAFE", fg: "#1E40AF" };
-    return { bg: "#F3F4F6", fg: "#6B7280" };
-  };
 
   return (
     <main style={{ background: "var(--bg)", minHeight: "100vh" }}>
@@ -67,7 +62,6 @@ export default async function AdminProposalsPage() {
         ) : (
           <div className="space-y-3">
             {proposals.map((p) => {
-              const c = statusColor(p.status);
               return (
                 <div
                   key={p.id}
@@ -82,12 +76,10 @@ export default async function AdminProposalsPage() {
                       >
                         {p.clientName}
                       </h2>
-                      <span
-                        className="text-xs font-bold uppercase tracking-wide px-2 py-0.5 rounded"
-                        style={{ background: c.bg, color: c.fg }}
-                      >
-                        {p.status ?? "draft"}
-                      </span>
+                      <StatusSelect
+                        proposalId={p.id}
+                        initialStatus={(p.status ?? "draft") as "draft" | "sent" | "signed"}
+                      />
                     </div>
                     <p className="text-xs mb-1" style={{ color: "var(--text-muted)" }}>
                       {p.pricingPhase ?? p.badge ?? "Proposal"} &middot;{" "}

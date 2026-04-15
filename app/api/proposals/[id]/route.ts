@@ -38,7 +38,8 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
     return NextResponse.json({ error: "Body id does not match URL id" }, { status: 400 });
   }
 
-  if (!body.clientName || !body.clientName.trim()) {
+  // Allow status-only patches without requiring full body
+  if (Object.keys(body).length > 1 && (!body.clientName || !body.clientName.trim())) {
     return NextResponse.json({ error: "clientName is required" }, { status: 400 });
   }
 
