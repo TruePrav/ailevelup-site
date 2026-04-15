@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
+// Build trigger: rebuild for favicon + icon.png asset pickup
 const isDev = process.env.NODE_ENV !== "production";
 const scriptSrc = ["'self'", "'unsafe-inline'", ...(isDev ? ["'unsafe-eval'"] : [])].join(" ");
 
