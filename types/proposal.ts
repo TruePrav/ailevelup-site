@@ -53,6 +53,7 @@ export interface Proposal {
   ctaSteps?: string[];
   status?: "draft" | "sent" | "signed";
   signatureDataUrl?: string;
+  signedByEmail?: string;
   submittedAt?: string;
   createdAt: string;
 }

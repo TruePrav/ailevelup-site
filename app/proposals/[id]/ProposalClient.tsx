@@ -375,8 +375,23 @@ function buildProposalHTML(proposal: Proposal, sigDataUrl: string, preparerSig: 
       fd.append('date', sigDate.textContent);
       fd.append('proposal_slug', '${proposal.id}');
       fd.append('signature', img);
-      await fetch('/api/proposal-signature', { method: 'POST', body: fd });
-    } catch(e) { console.warn('Submission failed', e); }
+      var res = await fetch('/api/proposal-signature', { method: 'POST', body: fd });
+      var data = await res.json().catch(function(){ return {}; });
+      if (!res.ok || !data.success) {
+        console.error('[sign] failed', res.status, data);
+        alert('Sorry — there was a problem saving your signature: ' + (data.error || res.status) + '. Please try again or contact praveen@ailevelup.ca.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Accept & Sign Proposal - ${proposal.pricingAmount} ${proposal.pricingCurrency}';
+        return;
+      }
+      console.log('[sign] saved', data);
+    } catch(e) {
+      console.error('[sign] exception', e);
+      alert('Sorry — there was a network error saving your signature. Please try again.');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Accept & Sign Proposal - ${proposal.pricingAmount} ${proposal.pricingCurrency}';
+      return;
+    }
     wrap.style.display = 'none';
     clearBtn.parentElement.style.display = 'none';
     success.classList.add('show');
