@@ -14,6 +14,11 @@ export interface TermItem {
   value: string;
 }
 
+export interface SetupFeeItem {
+  item: string;
+  amount: string;
+}
+
 export interface Proposal {
   id: string;
   badge?: string;
@@ -43,6 +48,8 @@ export interface Proposal {
   whatWeNeed?: string[];
   clientProvides?: string[];
   terms?: TermItem[];
+  setupFees?: SetupFeeItem[];
+  managedSetup?: boolean;
   ctaSteps?: string[];
   status?: "draft" | "sent" | "signed";
   signatureDataUrl?: string;

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Proposal, Deliverable, TimelineEntry, TermItem } from "@/types/proposal";
+import { Proposal, Deliverable, TimelineEntry, TermItem, SetupFeeItem } from "@/types/proposal";
 
 type Mode = "create" | "edit";
 
@@ -210,6 +210,21 @@ export default function ProposalForm({ initial, mode }: Props) {
       const arr = [...(f.terms ?? [])];
       arr.splice(i, 1);
       return { ...f, terms: arr };
+    });
+
+  const pushSetupFee = () =>
+    setForm((f) => ({ ...f, setupFees: [...(f.setupFees ?? []), { item: "", amount: "" }] }));
+  const setSetupFeeAt = (i: number, field: keyof SetupFeeItem, value: string) =>
+    setForm((f) => {
+      const arr = [...(f.setupFees ?? [])];
+      arr[i] = { ...arr[i], [field]: value };
+      return { ...f, setupFees: arr };
+    });
+  const removeSetupFeeAt = (i: number) =>
+    setForm((f) => {
+      const arr = [...(f.setupFees ?? [])];
+      arr.splice(i, 1);
+      return { ...f, setupFees: arr };
     });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -512,11 +527,61 @@ export default function ProposalForm({ initial, mode }: Props) {
             items={form.pricingIncludes ?? []} label="Pricing Includes" placeholder="50 product pages with variants"
             onAdd={() => pushStr("pricingIncludes")} onChange={(i, v) => setStrAt("pricingIncludes", i, v)} onRemove={(i) => removeStrAt("pricingIncludes", i)}
           />
+
+          <div style={sectionStyle}>
+            <h2 className="text-lg font-bold mb-1" style={{ fontFamily: "var(--font-display)", color: "var(--text)" }}>
+              Setup Fees
+            </h2>
+            <p className="text-xs mb-4" style={{ color: "var(--text-muted)" }}>
+              Optional add-ons billed separately (domain, email, etc.)
+            </p>
+            {(form.setupFees ?? []).map((f, i) => (
+              <div key={i} className="mb-3 p-3 rounded-xl" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)" }}>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-xs font-bold" style={{ color: "var(--text-muted)" }}>#{i + 1}</span>
+                  <button type="button" onClick={() => removeSetupFeeAt(i)} style={removeBtnStyle}>Remove</button>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="sm:col-span-2">
+                    <label style={labelStyle}>Item</label>
+                    <input style={inputStyle} value={f.item} onChange={(e) => setSetupFeeAt(i, "item", e.target.value)} placeholder="Domain & Email Setup" />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Amount</label>
+                    <input style={inputStyle} value={f.amount} onChange={(e) => setSetupFeeAt(i, "amount", e.target.value)} placeholder="$100 CAD + costs" />
+                  </div>
+                </div>
+              </div>
+            ))}
+            <button type="button" onClick={pushSetupFee} style={addBtnStyle}>+ Add Setup Fee</button>
+          </div>
         </>
       )}
 
       {tab === "action" && (
         <>
+          <div style={sectionStyle}>
+            <h2 className="text-lg font-bold mb-3" style={{ fontFamily: "var(--font-display)", color: "var(--text)" }}>
+              Managed Setup Option
+            </h2>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={form.managedSetup ?? false}
+                onChange={(e) => set("managedSetup", e.target.checked)}
+                style={{ width: 18, height: 18, accentColor: "var(--accent, #6366F1)", cursor: "pointer" }}
+              />
+              <div>
+                <span className="text-sm font-semibold" style={{ color: "var(--text)" }}>
+                  Show managed domain &amp; email option
+                </span>
+                <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
+                  Adds a callout on the proposal: &quot;We can handle domain &amp; email setup for $100 CAD + cost of services&quot;
+                </p>
+              </div>
+            </label>
+          </div>
+
           <StringArrayEditor
             items={form.whatWeNeed ?? []} label="What We Need From Client" placeholder="Provide store admin access"
             onAdd={() => pushStr("whatWeNeed")} onChange={(i, v) => setStrAt("whatWeNeed", i, v)} onRemove={(i) => removeStrAt("whatWeNeed", i)}

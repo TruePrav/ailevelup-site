@@ -28,6 +28,12 @@ function buildProposalHTML(proposal: Proposal, sigDataUrl: string) {
     `<span class="term-label">${t.label}</span><span class="term-value">${t.value}</span>`
   ).join("") ?? "";
 
+  const setupFeeRows = proposal.setupFees?.filter(f => f.item).map(f =>
+    `<tr><td>${f.item}</td><td style="text-align:right;font-weight:600;color:var(--brand-primary)">${f.amount}</td></tr>`
+  ).join("") ?? "";
+
+  const hasSetupFees = (proposal.setupFees ?? []).some(f => f.item);
+
   const ctaSteps = proposal.ctaSteps?.map((s) =>
     `<li>${s}</li>`
   ).join("") ?? "";
@@ -226,12 +232,30 @@ function buildProposalHTML(proposal: Proposal, sigDataUrl: string) {
     </div>
     <p style="font-size:13px;color:var(--text-muted);margin-top:12px;">Payment: ${proposal.paymentTerms}. Methods: ${proposal.paymentMethods}.</p>
   </div>
+  ${hasSetupFees ? `
+  <div class="section">
+    <div class="section-num">06b</div>
+    <h2>Optional Add-Ons</h2>
+    <table>
+      <thead><tr><th>Service</th><th style="text-align:right">Fee</th></tr></thead>
+      <tbody>${setupFeeRows}</tbody>
+    </table>
+    <p style="font-size:12px;color:var(--text-muted);margin-top:-12px;">Add-ons are optional and billed separately if requested.</p>
+  </div>` : ""}
+
   <div class="section">
     <div class="section-num">07</div>
     <h2>What We Need From ${(proposal.clientName || "").split(' ')[0]}</h2>
     <div class="scope-grid">
       <div class="scope-col included"><h4>✓ To get started</h4><ul>${needItems}</ul></div>
-      <div class="scope-col excluded"><h4>- Client provides</h4><ul>${provideItems}</ul></div>
+      <div class="scope-col excluded">
+        <h4>- Client provides</h4>
+        <ul>${provideItems}</ul>
+        ${proposal.managedSetup ? `<div style="margin-top:12px;padding:10px 12px;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;font-size:11px;color:#1E40AF;line-height:1.5;">
+          <strong>Prefer we handle it?</strong><br/>
+          We can manage domain purchase &amp; email setup for <strong>$100 CAD + cost of domain &amp; email service</strong>. Just let us know when signing.
+        </div>` : ""}
+      </div>
     </div>
   </div>
   <div class="footer"><span>Confidential - Prepared for ${proposal.preparedFor}</span><a href="https://ailevelup.ca">ailevelup.ca</a></div>
