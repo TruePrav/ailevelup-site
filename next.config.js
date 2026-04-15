@@ -3,6 +3,13 @@ const isDev = process.env.NODE_ENV !== "production";
 const scriptSrc = ["'self'", "'unsafe-inline'", ...(isDev ? ["'unsafe-eval'"] : [])].join(" ");
 
 const nextConfig = {
+  // Make sure @sparticuz/chromium's brotli-compressed binaries are
+  // included in the serverless bundle for the signature route.
+  outputFileTracingIncludes: {
+    "/api/proposal-signature": [
+      "./node_modules/@sparticuz/chromium/bin/**",
+    ],
+  },
   async headers() {
     return [
       {
