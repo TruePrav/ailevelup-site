@@ -7,7 +7,18 @@ const today = new Date().toLocaleDateString("en-US", {
   month: "long", day: "numeric", year: "numeric",
 });
 
-function buildProposalHTML(proposal: Proposal, sigDataUrl: string, preparerSig: string | null) {
+function buildProposalHTML(
+  proposal: Proposal,
+  sigDataUrl: string,
+  preparerSig: string | null,
+  opts: { isAdmin?: boolean } = {}
+) {
+  const isSigned = proposal.status === "signed" && !!proposal.signatureDataUrl;
+  const signedImg = proposal.signatureDataUrl ?? sigDataUrl ?? "";
+  const signedDate = proposal.submittedAt
+    ? new Date(proposal.submittedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
+    : proposal.date;
+  const signedEmail = proposal.signedByEmail ?? "";
   const deliverablesRows = proposal.deliverables?.map(d =>
     `<tr><td><strong>${d.deliverable}</strong></td><td>${d.details}</td></tr>`
   ).join("") ?? "";
@@ -149,18 +160,32 @@ function buildProposalHTML(proposal: Proposal, sigDataUrl: string, preparerSig: 
   .floating-download-tooltip { position: absolute; bottom: 64px; right: 0; background: var(--brand-dark); color: white; font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 6px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.15s; }
   .floating-download:hover .floating-download-tooltip { opacity: 1; }
   @media print { .floating-download { display: none !important; } }
+  /* Signed state */
+  .signed-image-wrap { display: flex; align-items: flex-end; justify-content: flex-start; min-height: 96px; border-bottom: 1px solid var(--text-primary); margin-bottom: 6px; }
+  .signed-image-wrap img { max-width: 320px; max-height: 90px; display: block; margin-bottom: -1px; filter: brightness(0); }
+  .signed-banner { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 28px 24px; margin-top: 24px; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 12px; }
+  .signed-banner-icon { width: 52px; height: 52px; background: #d1fae5; color: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; margin-bottom: 12px; }
+  .signed-banner h3 { font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 700; color: #065f46; margin: 0 0 6px; }
+  .signed-banner p { font-size: 13px; color: #047857; margin: 0 0 16px; }
+  .signed-download { display: inline-flex; align-items: center; gap: 8px; background: var(--brand-primary); color: white; font-weight: 700; font-size: 14px; padding: 12px 22px; border-radius: 8px; text-decoration: none; border: none; cursor: pointer; transition: opacity 0.15s; }
+  .signed-download:hover { opacity: 0.9; }
+  .signed-download svg { width: 16px; height: 16px; }
+  .reset-fab { position: fixed; bottom: 24px; right: 168px; z-index: 9999; background: #ef4444; color: white; border: none; border-radius: 50%; width: 56px; height: 56px; cursor: pointer; box-shadow: 0 4px 16px rgba(239,68,68,0.35); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; }
+  .reset-fab:hover { opacity: 0.9; }
+  @media print { .signed-banner, .reset-fab { display: none !important; } .signed-image-wrap { border-bottom: 1px solid #0f172a; } }
 </style>
 </head>
 <body>
 
-<a class="floating-download no-print" href="javascript:window.print()" title="Download PDF">
+${isSigned ? "" : `<a class="floating-download no-print" href="javascript:window.print()" title="Download PDF">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
     <polyline points="7 10 12 15 17 10"/>
     <line x1="12" y1="15" x2="12" y2="3"/>
   </svg>
   <span class="floating-download-tooltip">Download PDF</span>
-</a>
+</a>`}
+${isSigned && opts.isAdmin ? `<button type="button" class="reset-fab no-print" id="resetSignatureBtn" title="Reset signature (admin only)">RESET</button>` : ""}
 
 <!-- PAGE 1 - COVER -->
 <div class="page">
@@ -285,22 +310,24 @@ function buildProposalHTML(proposal: Proposal, sigDataUrl: string, preparerSig: 
       <div class="signature-item">
         <div class="name">${proposal.clientName}</div>
         <div class="role">Client</div>
-        <div style="margin:10px 0 12px;">
-          <input type="email" id="sigEmail" placeholder="Your email address" required style="width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-family:inherit;background:#f8fafc;color:#0f172a;" />
-        </div>
-        <div class="sig-pad-wrap" id="sigWrap">
-          <canvas id="sigPad" width="600" height="140"></canvas>
-          <div class="sig-pad-label" id="sigLabel">Draw your signature here</div>
-        </div>
-        <div style="margin-top:8px;display:flex;align-items:center;gap:8px;">
-          <button type="button" class="sig-btn sig-btn-clear" id="sigClear">Clear</button>
-          <span id="sigDate" style="font-size:12px;color:#94a3b8;"></span>
-        </div>
-        <div class="sig-success" id="sigSuccess">
-          <div class="sig-success-icon">✓</div>
-          <h2>Proposal Signed!</h2>
-          <p>Thank you. We will be in touch within 24 hours to get started.</p>
-        </div>
+        ${isSigned ? `
+          <div class="signed-image-wrap">
+            <img src="${signedImg}" alt="Signed by ${proposal.clientName}" />
+          </div>
+          <div class="date-label"><span>${signedDate}${signedEmail ? ` · ${signedEmail}` : ""}</span></div>
+        ` : `
+          <div style="margin:10px 0 12px;">
+            <input type="email" id="sigEmail" placeholder="Your email address" required style="width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-family:inherit;background:#f8fafc;color:#0f172a;" />
+          </div>
+          <div class="sig-pad-wrap" id="sigWrap">
+            <canvas id="sigPad" width="600" height="140"></canvas>
+            <div class="sig-pad-label" id="sigLabel">Draw your signature here</div>
+          </div>
+          <div style="margin-top:8px;display:flex;align-items:center;gap:8px;">
+            <button type="button" class="sig-btn sig-btn-clear" id="sigClear">Clear</button>
+            <span id="sigDate" style="font-size:12px;color:#94a3b8;"></span>
+          </div>
+        `}
       </div>
       <div class="signature-item">
         <div class="name">${((proposal.preparedBy ?? "Praveen Mahtani") + "").split('|')[0].trim()}</div>
@@ -311,6 +338,22 @@ function buildProposalHTML(proposal: Proposal, sigDataUrl: string, preparerSig: 
         <div class="date-label"><span>${proposal.date}</span></div>
       </div>
     </div>
+
+    ${isSigned ? `
+      <div class="signed-banner no-print">
+        <div class="signed-banner-icon">✓</div>
+        <h3>Proposal Signed!</h3>
+        <p>Thank you${proposal.clientName ? `, ${proposal.clientName.split(" ")[0]}` : ""}. Download your signed copy below — we'll be in touch within 24 hours.</p>
+        <button type="button" class="signed-download" onclick="window.print()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Download Signed Copy
+        </button>
+      </div>
+    ` : ""}
   </div>
 
   <div class="footer"><span>Confidential - Prepared for ${proposal.preparedFor}</span><a href="https://ailevelup.ca">ailevelup.ca</a></div>
@@ -318,12 +361,44 @@ function buildProposalHTML(proposal: Proposal, sigDataUrl: string, preparerSig: 
 
 <script>
 (function() {
+  var IS_SIGNED = ${isSigned ? "true" : "false"};
+  var IS_ADMIN = ${opts.isAdmin ? "true" : "false"};
+
+  // Admin reset button (only rendered when signed + admin)
+  if (IS_SIGNED && IS_ADMIN) {
+    var resetBtn = document.getElementById('resetSignatureBtn');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', async function() {
+        if (!confirm('Reset this signature? This clears the signature on the proposal AND deletes the matching row in proposal_signatures. Admin testing only.')) return;
+        resetBtn.disabled = true;
+        resetBtn.textContent = '...';
+        try {
+          var res = await fetch('/api/proposals/${proposal.id}/reset-signature', { method: 'POST' });
+          var data = await res.json().catch(function(){ return {}; });
+          if (!res.ok) {
+            alert('Reset failed: ' + (data.error || res.status));
+            resetBtn.disabled = false;
+            resetBtn.textContent = 'RESET';
+            return;
+          }
+          window.location.reload();
+        } catch(e) {
+          alert('Reset error: ' + e);
+          resetBtn.disabled = false;
+          resetBtn.textContent = 'RESET';
+        }
+      });
+    }
+  }
+
+  if (IS_SIGNED) return; // no sig-pad wiring on signed proposals
+
   var canvas = document.getElementById('sigPad');
   var wrap = document.getElementById('sigWrap');
   var clearBtn = document.getElementById('sigClear');
   var sigDate = document.getElementById('sigDate');
   var sigEmail = document.getElementById('sigEmail');
-  var success = document.getElementById('sigSuccess');
+  if (!canvas || !wrap || !clearBtn || !sigDate || !sigEmail) return;
   var ctx = canvas.getContext('2d');
   var drawing = false, lastX = 0, lastY = 0;
   var submitBtn = null;
@@ -392,10 +467,9 @@ function buildProposalHTML(proposal: Proposal, sigDataUrl: string, preparerSig: 
       submitBtn.textContent = 'Accept & Sign Proposal - ${proposal.pricingAmount} ${proposal.pricingCurrency}';
       return;
     }
-    wrap.style.display = 'none';
-    clearBtn.parentElement.style.display = 'none';
-    success.classList.add('show');
-    submitBtn.style.display = 'none';
+    // Reload so the server-rendered "signed" variant takes over (with
+    // the saved signature embedded and the Download Signed Copy button)
+    window.location.reload();
   });
   sigDate.parentElement.parentElement.appendChild(submitBtn);
 })();
@@ -408,14 +482,21 @@ function buildProposalHTML(proposal: Proposal, sigDataUrl: string, preparerSig: 
 export default function ProposalClient({
   proposal,
   preparerSignature,
+  isAdmin = false,
 }: {
   proposal: Proposal;
   preparerSignature?: string | null;
+  isAdmin?: boolean;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [sigDataUrl] = useState("");
 
-  const html = buildProposalHTML(proposal, sigDataUrl, preparerSignature ?? null);
+  const html = buildProposalHTML(
+    proposal,
+    sigDataUrl,
+    preparerSignature ?? null,
+    { isAdmin }
+  );
 
   return (
     <div ref={containerRef}>

@@ -1,9 +1,51 @@
 import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { Resend } from "resend";
+import { createClient } from "@supabase/supabase-js";
 import { getProposal, saveProposal } from "@/lib/proposals";
 import { logAudit } from "@/lib/audit";
 import { renderProposalPdf } from "@/lib/pdf";
+
+function getServiceSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { persistSession: false } }
+  );
+}
+
+async function recordSignatureRow(opts: {
+  name: string;
+  email: string;
+  signer: string;
+  proposalSlug: string;
+  date: string;
+  signatureDataUrl: string;
+}) {
+  try {
+    const sb = getServiceSupabase();
+    const { error } = await sb.from("proposal_signatures").insert({
+      name: opts.name,
+      email: opts.email,
+      signer: opts.signer,
+      proposal_slug: opts.proposalSlug,
+      date: opts.date,
+      signature_base64: opts.signatureDataUrl,
+      raw_data: {
+        userAgent: null,
+        submittedAt: new Date().toISOString(),
+      },
+    });
+    if (error) {
+      console.error("[proposal-signature] proposal_signatures insert failed:", error.message);
+      return { ok: false, reason: error.message };
+    }
+    return { ok: true };
+  } catch (err) {
+    console.error("[proposal-signature] proposal_signatures insert exception:", err);
+    return { ok: false, reason: String(err) };
+  }
+}
 
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
@@ -162,6 +204,20 @@ export async function POST(req: NextRequest) {
         { error: "Failed to save signature", details: String(err) },
         { status: 500, headers: corsHeaders }
       );
+    }
+
+    // Also record an audit row in proposal_signatures (uses service role, so
+    // RLS policies don't block it). Failure here must NOT fail the sign flow.
+    const sigRowResult = await recordSignatureRow({
+      name: name || proposal.clientName || "",
+      email,
+      signer: name || proposal.clientName || "",
+      proposalSlug,
+      date,
+      signatureDataUrl: signature,
+    });
+    if (!sigRowResult.ok) {
+      console.warn("[proposal-signature] signature row not recorded:", sigRowResult.reason);
     }
 
     // Send email notification (best effort, doesn't block success)

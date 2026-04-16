@@ -4,12 +4,23 @@ const isDev = process.env.NODE_ENV !== "production";
 const scriptSrc = ["'self'", "'unsafe-inline'", ...(isDev ? ["'unsafe-eval'"] : [])].join(" ");
 
 const nextConfig = {
-  // Make sure @sparticuz/chromium's brotli-compressed binaries are
-  // included in the serverless bundle for the signature route.
-  outputFileTracingIncludes: {
-    "/api/proposal-signature": [
-      "./node_modules/@sparticuz/chromium/bin/**",
+  // In Next 14.2.x these keys live under `experimental`. Prior versions of
+  // this config had them at the top level, which Next silently ignored —
+  // that's why the chromium binaries weren't getting traced into the
+  // serverless bundle and puppeteer.launch() failed in production.
+  experimental: {
+    // Don't let webpack try to bundle these native / binary packages;
+    // let the Node runtime load them from node_modules at runtime.
+    serverComponentsExternalPackages: [
+      "@sparticuz/chromium",
+      "puppeteer-core",
     ],
+    // Trace-include the chromium binaries for the PDF render route.
+    outputFileTracingIncludes: {
+      "/api/proposal-signature": [
+        "./node_modules/@sparticuz/chromium/bin/**",
+      ],
+    },
   },
   async headers() {
     return [
