@@ -2,6 +2,7 @@ import Link from "next/link";
 import { listProposals } from "@/lib/proposals";
 import { Proposal } from "@/types/proposal";
 import StatusSelect from "@/components/StatusSelect";
+import ResetSignatureButton from "@/components/ResetSignatureButton";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -111,6 +112,9 @@ export default async function AdminProposalsPage() {
                     >
                       Edit
                     </Link>
+                    {p.status === "signed" && (
+                      <ResetSignatureButton proposalId={p.id} />
+                    )}
                   </div>
                 </div>
               );
