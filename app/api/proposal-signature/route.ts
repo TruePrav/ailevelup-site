@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { Resend } from "resend";
 import { createClient } from "@supabase/supabase-js";
+import { waitUntil } from "@vercel/functions";
 import { getProposal, saveProposal } from "@/lib/proposals";
 import { logAudit } from "@/lib/audit";
 import { renderProposalPdf } from "@/lib/pdf";
@@ -316,9 +317,11 @@ export async function POST(req: NextRequest) {
       console.warn("[proposal-signature] signature row not recorded:", sigRowResult.reason);
     }
 
-    // Render the signed PDF once, then fan out to both the admin notification
-    // and the client confirmation email. Both are best-effort and don't block
-    // success — the signature is already persisted at this point.
+    // At this point the signature is persisted — respond to the client
+    // IMMEDIATELY so they see the success UI without waiting on puppeteer
+    // or Resend. The PDF render + emails + audit log run in the background
+    // via Vercel's waitUntil; the function stays alive until they finish
+    // (or until maxDuration = 60s, whichever comes first).
     const emailOpts: EmailSendOpts = {
       proposalId: proposalSlug,
       clientName: name || proposal.clientName,
@@ -328,34 +331,52 @@ export async function POST(req: NextRequest) {
       pricingCurrency: proposal.pricingCurrency ?? "",
       signature,
     };
-    const pdf = await renderSignedPdfOnce(proposalSlug);
-    const [adminResult, clientResult] = await Promise.all([
-      sendAdminNotification(emailOpts, pdf),
-      sendClientConfirmation(emailOpts, pdf),
-    ]);
 
-    // Audit
-    await logAudit({
-      auth: { type: "none" },
-      method: "POST",
-      path: "/api/proposal-signature",
-      status: 200,
-      summary:
-        `${name || proposal.clientName} signed ${proposalSlug} (${email}) — ` +
-        `admin email ${adminResult.sent ? "sent" : "skipped"}, ` +
-        `client email ${clientResult.sent ? "sent" : "skipped"}`,
-      ip,
-    });
+    waitUntil(
+      (async () => {
+        const t0 = Date.now();
+        try {
+          const pdf = await renderSignedPdfOnce(proposalSlug);
+          const [adminResult, clientResult] = await Promise.all([
+            sendAdminNotification(emailOpts, pdf),
+            sendClientConfirmation(emailOpts, pdf),
+          ]);
+          await logAudit({
+            auth: { type: "none" },
+            method: "POST",
+            path: "/api/proposal-signature",
+            status: 200,
+            summary:
+              `${name || proposal.clientName} signed ${proposalSlug} (${email}) — ` +
+              `admin email ${adminResult.sent ? "sent" : "skipped"}, ` +
+              `client email ${clientResult.sent ? "sent" : "skipped"} ` +
+              `(bg took ${Date.now() - t0}ms)`,
+            ip,
+          });
+        } catch (err) {
+          console.error("[proposal-signature] background work failed:", err);
+          // Best-effort audit even on failure so we know the sign happened
+          await logAudit({
+            auth: { type: "none" },
+            method: "POST",
+            path: "/api/proposal-signature",
+            status: 500,
+            summary:
+              `${name || proposal.clientName} signed ${proposalSlug} (${email}) — ` +
+              `bg failed: ${String(err).slice(0, 200)}`,
+            ip,
+          }).catch(() => {});
+        }
+      })()
+    );
 
     return NextResponse.json(
       {
         success: true,
         proposalId: proposalSlug,
         status: "signed",
-        adminEmailSent: adminResult.sent,
-        adminEmailReason: adminResult.sent ? undefined : adminResult.reason,
-        clientEmailSent: clientResult.sent,
-        clientEmailReason: clientResult.sent ? undefined : clientResult.reason,
+        // Emails are now async — the client can't know their status yet
+        emailsQueued: true,
         date,
       },
       { headers: corsHeaders }

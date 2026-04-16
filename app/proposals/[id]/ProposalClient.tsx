@@ -437,9 +437,59 @@ ${isSigned ? "" : `<a class="floating-download no-print" href="javascript:window
       submitBtn.textContent = 'Accept & Sign Proposal - ${proposal.pricingAmount} ${proposal.pricingCurrency}';
       return;
     }
-    // Reload so the server-rendered "signed" variant takes over (with
-    // the saved signature embedded and the Download Signed Copy button)
-    window.location.reload();
+    // Flip the UI to the signed state in place — no page reload.
+    // Server-side the proposal is already marked signed, so a later refresh
+    // will naturally render the same view from the buildProposalHTML
+    // branch. Doing it client-side here saves the ~500ms reload round-trip.
+    try {
+      var sigItem = wrap.parentElement; // .signature-item
+      // Hide unsigned controls
+      if (sigEmail && sigEmail.parentElement) sigEmail.parentElement.style.display = 'none';
+      wrap.style.display = 'none';
+      if (clearBtn && clearBtn.parentElement) clearBtn.parentElement.style.display = 'none';
+      submitBtn.style.display = 'none';
+      // Insert signature image in same slot as the sig pad
+      var imgWrap = document.createElement('div');
+      imgWrap.className = 'signed-image-wrap';
+      var imgEl = document.createElement('img');
+      imgEl.src = img;
+      imgEl.alt = 'Signed';
+      imgWrap.appendChild(imgEl);
+      wrap.parentNode.insertBefore(imgWrap, wrap);
+      // Date + email line under the signature
+      var dateLabel = document.createElement('div');
+      dateLabel.className = 'date-label';
+      var span = document.createElement('span');
+      span.textContent = sigDate.textContent + ' · ' + email;
+      dateLabel.appendChild(span);
+      imgWrap.parentNode.insertBefore(dateLabel, imgWrap.nextSibling);
+      // Insert the success banner at the end of .signature-block
+      var sigBlock = sigItem && sigItem.closest ? sigItem.closest('.signature-block') : null;
+      if (sigBlock) {
+        var banner = document.createElement('div');
+        banner.className = 'signed-banner no-print';
+        var greeting = '${greetingName}';
+        banner.innerHTML =
+          '<div class="signed-banner-icon">&#10003;</div>' +
+          '<h3>Proposal Signed!</h3>' +
+          '<p>Thank you' + (greeting ? (', ' + greeting) : '') +
+            '. A copy has been sent to your email at <strong>' + email + '</strong>. You can also download it below — we will be in touch within 24 hours.</p>' +
+          '<button type="button" class="signed-download" onclick="window.print()">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">' +
+              '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>' +
+              '<polyline points="7 10 12 15 17 10"/>' +
+              '<line x1="12" y1="15" x2="12" y2="3"/>' +
+            '</svg>Download Signed Copy' +
+          '</button>';
+        sigBlock.appendChild(banner);
+      }
+      // Hide the floating download FAB (now redundant — it's in the banner)
+      var fab = document.querySelector('.floating-download');
+      if (fab) fab.style.display = 'none';
+    } catch (e) {
+      console.warn('[sign] client-side UI swap failed, falling back to reload', e);
+      window.location.reload();
+    }
   });
   sigDate.parentElement.parentElement.appendChild(submitBtn);
 })();
