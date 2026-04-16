@@ -372,6 +372,18 @@ export default function ProposalForm({ initial, mode }: Props) {
               </p>
             </div>
             <div>
+              <label style={labelStyle}>Signer Full Name</label>
+              <input
+                style={inputStyle}
+                value={form.signerFullName ?? ""}
+                onChange={(e) => set("signerFullName", e.target.value)}
+                placeholder="Harsha Karnani"
+              />
+              <p style={{ fontSize: "11px", color: "#94a3b8", marginTop: "4px" }}>
+                Full legal name of the person signing. Shown on the signature block. Leave blank when Client Name is already an individual.
+              </p>
+            </div>
+            <div>
               <label style={labelStyle}>Badge</label>
               <input style={inputStyle} value={form.badge ?? ""} onChange={(e) => set("badge", e.target.value)} placeholder="Shopify Store Build Proposal" />
             </div>

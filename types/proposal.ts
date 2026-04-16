@@ -28,6 +28,10 @@ export interface Proposal {
    *  and on the signed-proposal banner. Falls back to the first word
    *  of clientName when empty. */
   addressAs?: string;
+  /** Legal full name of the human signing on behalf of the client.
+   *  Shown on the signature block. Falls back to clientName when blank
+   *  (e.g., when the client IS an individual). */
+  signerFullName?: string;
   subtitle?: string;
   preparedFor?: string;
   date: string;

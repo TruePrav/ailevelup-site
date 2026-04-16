@@ -21,6 +21,11 @@ function buildProposalHTML(
   const greetingName = (proposal.addressAs ?? "").trim()
     || (proposal.clientName ?? "").trim().split(/\s+/)[0]
     || "";
+  // Full human name shown on the signature block. Defaults to clientName
+  // when the client *is* an individual (signerFullName left blank).
+  const signerDisplayName = (proposal.signerFullName ?? "").trim()
+    || proposal.clientName
+    || "";
   const deliverablesRows = proposal.deliverables?.map(d =>
     `<tr><td><strong>${d.deliverable}</strong></td><td>${d.details}</td></tr>`
   ).join("") ?? "";
@@ -307,7 +312,7 @@ ${isSigned ? "" : `<a class="floating-download no-print" href="javascript:window
     <h3>Signatures</h3>
     <div class="signature-grid">
       <div class="signature-item">
-        <div class="name">${proposal.clientName}</div>
+        <div class="name">${signerDisplayName}</div>
         <div class="role">Client</div>
         ${isSigned ? `
           <div class="signed-image-wrap">
