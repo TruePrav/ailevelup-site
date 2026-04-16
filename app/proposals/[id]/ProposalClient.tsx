@@ -160,9 +160,9 @@ function buildProposalHTML(
   .floating-download-tooltip { position: absolute; bottom: 64px; right: 0; background: var(--brand-dark); color: white; font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 6px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.15s; }
   .floating-download:hover .floating-download-tooltip { opacity: 1; }
   @media print { .floating-download { display: none !important; } }
-  /* Signed state */
-  .signed-image-wrap { display: flex; align-items: flex-end; justify-content: flex-start; min-height: 96px; border-bottom: 1px solid var(--text-primary); margin-bottom: 6px; }
-  .signed-image-wrap img { max-width: 320px; max-height: 90px; display: block; margin-bottom: -1px; filter: brightness(0); }
+  /* Signed state — geometry mirrors the preparer block so the two underlines line up */
+  .signed-image-wrap { margin-top: 4px; height: 72px; border-bottom: 1px solid var(--text-primary); display: flex; align-items: flex-end; justify-content: flex-start; margin-bottom: 6px; }
+  .signed-image-wrap img { max-width: 260px; max-height: 70px; display: block; margin-bottom: -1px; filter: brightness(0); }
   .signed-banner { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 28px 24px; margin-top: 24px; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 12px; }
   .signed-banner-icon { width: 52px; height: 52px; background: #d1fae5; color: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; margin-bottom: 12px; }
   .signed-banner h3 { font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 700; color: #065f46; margin: 0 0 6px; }
@@ -343,7 +343,7 @@ ${isSigned && opts.isAdmin ? `<button type="button" class="reset-fab no-print" i
       <div class="signed-banner no-print">
         <div class="signed-banner-icon">✓</div>
         <h3>Proposal Signed!</h3>
-        <p>Thank you${proposal.clientName ? `, ${proposal.clientName.split(" ")[0]}` : ""}. Download your signed copy below — we'll be in touch within 24 hours.</p>
+        <p>Thank you${proposal.clientName ? `, ${proposal.clientName.split(" ")[0]}` : ""}. A copy has been sent to your email${signedEmail ? ` at <strong>${signedEmail}</strong>` : ""}. You can also download it below — we'll be in touch within 24 hours.</p>
         <button type="button" class="signed-download" onclick="window.print()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>

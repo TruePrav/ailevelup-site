@@ -62,52 +62,62 @@ export async function OPTIONS() {
   return new NextResponse(null, { status: 200, headers: corsHeaders });
 }
 
-async function sendSignedEmail(opts: {
+async function renderSignedPdfOnce(proposalId: string): Promise<Buffer | null> {
+  try {
+    console.log("[proposal-signature] rendering PDF for", proposalId);
+    const pdf = await renderProposalPdf(proposalId);
+    console.log("[proposal-signature] PDF rendered", pdf.length, "bytes");
+    return pdf;
+  } catch (err) {
+    console.error("[proposal-signature] PDF render failed:", err);
+    return null;
+  }
+}
+
+interface EmailSendOpts {
   proposalId: string;
   clientName: string;
   signerEmail: string;
   pricingAmount: string;
   pricingCurrency: string;
   signature: string; // data URL
-}) {
+}
+
+function pdfAttachment(proposalId: string, pdf: Buffer | null) {
+  if (!pdf) return null;
+  return {
+    filename: `${proposalId}-signed.pdf`,
+    content: pdf.toString("base64"),
+  };
+}
+
+function signaturePngAttachment(proposalId: string, signatureDataUrl: string) {
+  if (!signatureDataUrl.startsWith("data:image")) return null;
+  const base64 = signatureDataUrl.split(",")[1];
+  if (!base64) return null;
+  return { filename: `${proposalId}-signature.png`, content: base64 };
+}
+
+async function sendAdminNotification(opts: EmailSendOpts, pdf: Buffer | null) {
   const apiKey = process.env.RESEND_API_KEY;
   const to = process.env.NOTIFY_EMAIL_TO;
   const from = process.env.NOTIFY_EMAIL_FROM ?? "Proposals <proposals@ailevelup.ca>";
 
   if (!apiKey || !to) {
-    console.warn("[proposal-signature] email skipped — RESEND_API_KEY or NOTIFY_EMAIL_TO not set");
-    return { sent: false, reason: "email env vars not set" };
+    console.warn("[proposal-signature] admin email skipped — RESEND_API_KEY or NOTIFY_EMAIL_TO not set");
+    return { sent: false, reason: "admin email env vars not set" };
   }
 
   try {
     const resend = new Resend(apiKey);
     const proposalUrl = `https://www.ailevelup.ca/proposals/${opts.proposalId}`;
 
-    const attachments: { filename: string; content: string }[] = [];
+    const attachments = [
+      pdfAttachment(opts.proposalId, pdf),
+      signaturePngAttachment(opts.proposalId, opts.signature),
+    ].filter(Boolean) as { filename: string; content: string }[];
 
-    // Full signed proposal as PDF (best effort — if it fails, we still
-    // send the email without it rather than losing the notification)
-    try {
-      console.log("[proposal-signature] rendering PDF for", opts.proposalId);
-      const pdf = await renderProposalPdf(opts.proposalId);
-      attachments.push({
-        filename: `${opts.proposalId}-signed.pdf`,
-        content: pdf.toString("base64"),
-      });
-      console.log("[proposal-signature] PDF rendered", pdf.length, "bytes");
-    } catch (err) {
-      console.error("[proposal-signature] PDF render failed:", err);
-    }
-
-    // Signature PNG as a separate attachment for quick reference
-    if (opts.signature.startsWith("data:image")) {
-      const base64 = opts.signature.split(",")[1];
-      if (base64) {
-        attachments.push({ filename: `${opts.proposalId}-signature.png`, content: base64 });
-      }
-    }
-
-    const hasPdf = attachments.some((a) => a.filename.endsWith(".pdf"));
+    const hasPdf = !!pdf;
 
     const result = await resend.emails.send({
       from,
@@ -134,13 +144,90 @@ async function sendSignedEmail(opts: {
     });
 
     if (result.error) {
-      console.error("[proposal-signature] resend error:", result.error);
+      console.error("[proposal-signature] admin resend error:", result.error);
       return { sent: false, reason: String(result.error.message ?? result.error) };
     }
-    console.log("[proposal-signature] email sent:", result.data?.id);
+    console.log("[proposal-signature] admin email sent:", result.data?.id);
     return { sent: true };
   } catch (err) {
-    console.error("[proposal-signature] email exception:", err);
+    console.error("[proposal-signature] admin email exception:", err);
+    return { sent: false, reason: String(err) };
+  }
+}
+
+async function sendClientConfirmation(opts: EmailSendOpts, pdf: Buffer | null) {
+  const apiKey = process.env.RESEND_API_KEY;
+  // Uses the same verified sender so Resend's SPF/DKIM applies. Body makes
+  // it explicit that replies won't reach anyone.
+  const from = process.env.CLIENT_EMAIL_FROM
+    ?? process.env.NOTIFY_EMAIL_FROM
+    ?? "AILevelUp <proposals@ailevelup.ca>";
+  const replyTo = process.env.CLIENT_EMAIL_REPLY_TO ?? "praveen@ailevelup.ca";
+
+  if (!apiKey) {
+    console.warn("[proposal-signature] client email skipped — RESEND_API_KEY not set");
+    return { sent: false, reason: "RESEND_API_KEY not set" };
+  }
+  if (!opts.signerEmail) {
+    console.warn("[proposal-signature] client email skipped — no signer email");
+    return { sent: false, reason: "no signer email" };
+  }
+
+  try {
+    const resend = new Resend(apiKey);
+    const firstName = (opts.clientName || "").split(" ")[0];
+    const attachments = [pdfAttachment(opts.proposalId, pdf)].filter(Boolean) as {
+      filename: string;
+      content: string;
+    }[];
+    const hasPdf = !!pdf;
+
+    const result = await resend.emails.send({
+      from,
+      to: opts.signerEmail,
+      replyTo,
+      subject: `Your signed proposal with AILevelUp`,
+      html: `
+        <div style="font-family: system-ui, -apple-system, sans-serif; color: #0f172a; line-height: 1.6; max-width: 560px;">
+          <h2 style="margin:0 0 12px;font-size:20px;color:#0f172a">Thank you${firstName ? `, ${firstName}` : ""}.</h2>
+          <p style="margin:0 0 14px;color:#334155">
+            We've received your signed proposal${hasPdf ? " and attached a copy for your records" : ""}.
+            We'll be in touch within 24 hours to kick off the next steps.
+          </p>
+          ${hasPdf
+            ? `<p style="margin:0 0 14px;color:#334155">
+                 The full signed PDF is attached to this email.
+               </p>`
+            : `<p style="margin:0 0 14px;color:#b91c1c;font-size:13px">
+                 Note: we couldn't generate your signed PDF this time — a copy is saved on our side and we'll send it over shortly.
+               </p>`
+          }
+          <p style="margin:0 0 18px;color:#334155">
+            If anything looks off, or you have questions, reach out to
+            <a href="mailto:${replyTo}" style="color:#2563eb;text-decoration:none;">${replyTo}</a>.
+          </p>
+          <hr style="border:none;border-top:1px solid #e2e8f0;margin:28px 0 18px" />
+          <p style="margin:0;color:#94a3b8;font-size:12px;line-height:1.6">
+            This is an automated message from an unmonitored address (proposals@ailevelup.ca).
+            <strong style="color:#64748b">Please do not reply directly.</strong>
+            For any questions, email <a href="mailto:${replyTo}" style="color:#94a3b8;">${replyTo}</a>.
+          </p>
+          <p style="margin:10px 0 0;color:#94a3b8;font-size:12px;">
+            AILevelUp · <a href="https://ailevelup.ca" style="color:#94a3b8;">ailevelup.ca</a>
+          </p>
+        </div>
+      `,
+      attachments,
+    });
+
+    if (result.error) {
+      console.error("[proposal-signature] client resend error:", result.error);
+      return { sent: false, reason: String(result.error.message ?? result.error) };
+    }
+    console.log("[proposal-signature] client email sent:", result.data?.id);
+    return { sent: true };
+  } catch (err) {
+    console.error("[proposal-signature] client email exception:", err);
     return { sent: false, reason: String(err) };
   }
 }
@@ -220,15 +307,22 @@ export async function POST(req: NextRequest) {
       console.warn("[proposal-signature] signature row not recorded:", sigRowResult.reason);
     }
 
-    // Send email notification (best effort, doesn't block success)
-    const emailResult = await sendSignedEmail({
+    // Render the signed PDF once, then fan out to both the admin notification
+    // and the client confirmation email. Both are best-effort and don't block
+    // success — the signature is already persisted at this point.
+    const emailOpts: EmailSendOpts = {
       proposalId: proposalSlug,
       clientName: name || proposal.clientName,
       signerEmail: email,
       pricingAmount: proposal.pricingAmount ?? "",
       pricingCurrency: proposal.pricingCurrency ?? "",
       signature,
-    });
+    };
+    const pdf = await renderSignedPdfOnce(proposalSlug);
+    const [adminResult, clientResult] = await Promise.all([
+      sendAdminNotification(emailOpts, pdf),
+      sendClientConfirmation(emailOpts, pdf),
+    ]);
 
     // Audit
     await logAudit({
@@ -236,7 +330,10 @@ export async function POST(req: NextRequest) {
       method: "POST",
       path: "/api/proposal-signature",
       status: 200,
-      summary: `${name || proposal.clientName} signed ${proposalSlug} (${email}) — email ${emailResult.sent ? "sent" : "skipped"}`,
+      summary:
+        `${name || proposal.clientName} signed ${proposalSlug} (${email}) — ` +
+        `admin email ${adminResult.sent ? "sent" : "skipped"}, ` +
+        `client email ${clientResult.sent ? "sent" : "skipped"}`,
       ip,
     });
 
@@ -245,8 +342,10 @@ export async function POST(req: NextRequest) {
         success: true,
         proposalId: proposalSlug,
         status: "signed",
-        emailSent: emailResult.sent,
-        emailReason: emailResult.sent ? undefined : emailResult.reason,
+        adminEmailSent: adminResult.sent,
+        adminEmailReason: adminResult.sent ? undefined : adminResult.reason,
+        clientEmailSent: clientResult.sent,
+        clientEmailReason: clientResult.sent ? undefined : clientResult.reason,
         date,
       },
       { headers: corsHeaders }
