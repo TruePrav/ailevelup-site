@@ -360,6 +360,18 @@ export default function ProposalForm({ initial, mode }: Props) {
               <input style={inputStyle} value={form.clientName} onChange={(e) => set("clientName", e.target.value)} required />
             </div>
             <div>
+              <label style={labelStyle}>Address As</label>
+              <input
+                style={inputStyle}
+                value={form.addressAs ?? ""}
+                onChange={(e) => set("addressAs", e.target.value)}
+                placeholder={form.clientName ? form.clientName.split(" ")[0] : "Harsha"}
+              />
+              <p style={{ fontSize: "11px", color: "#94a3b8", marginTop: "4px" }}>
+                Used in the email greeting and sign-confirmation banner. Leave blank to use the first word of Client Name.
+              </p>
+            </div>
+            <div>
               <label style={labelStyle}>Badge</label>
               <input style={inputStyle} value={form.badge ?? ""} onChange={(e) => set("badge", e.target.value)} placeholder="Shopify Store Build Proposal" />
             </div>

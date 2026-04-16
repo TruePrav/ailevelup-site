@@ -24,6 +24,10 @@ export interface Proposal {
   badge?: string;
   headline?: string;
   clientName: string;
+  /** Optional friendly name used when greeting the client in emails
+   *  and on the signed-proposal banner. Falls back to the first word
+   *  of clientName when empty. */
+  addressAs?: string;
   subtitle?: string;
   preparedFor?: string;
   date: string;

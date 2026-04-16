@@ -18,6 +18,9 @@ function buildProposalHTML(
     ? new Date(proposal.submittedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
     : proposal.date;
   const signedEmail = proposal.signedByEmail ?? "";
+  const greetingName = (proposal.addressAs ?? "").trim()
+    || (proposal.clientName ?? "").trim().split(/\s+/)[0]
+    || "";
   const deliverablesRows = proposal.deliverables?.map(d =>
     `<tr><td><strong>${d.deliverable}</strong></td><td>${d.details}</td></tr>`
   ).join("") ?? "";
@@ -339,7 +342,7 @@ ${isSigned ? "" : `<a class="floating-download no-print" href="javascript:window
       <div class="signed-banner no-print">
         <div class="signed-banner-icon">✓</div>
         <h3>Proposal Signed!</h3>
-        <p>Thank you${proposal.clientName ? `, ${proposal.clientName.split(" ")[0]}` : ""}. A copy has been sent to your email${signedEmail ? ` at <strong>${signedEmail}</strong>` : ""}. You can also download it below — we'll be in touch within 24 hours.</p>
+        <p>Thank you${greetingName ? `, ${greetingName}` : ""}. A copy has been sent to your email${signedEmail ? ` at <strong>${signedEmail}</strong>` : ""}. You can also download it below — we'll be in touch within 24 hours.</p>
         <button type="button" class="signed-download" onclick="window.print()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>

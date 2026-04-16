@@ -77,10 +77,19 @@ async function renderSignedPdfOnce(proposalId: string): Promise<Buffer | null> {
 interface EmailSendOpts {
   proposalId: string;
   clientName: string;
+  /** Friendly greeting name (from proposal.addressAs). Falls back to
+   *  the first word of clientName when blank. */
+  addressAs: string;
   signerEmail: string;
   pricingAmount: string;
   pricingCurrency: string;
   signature: string; // data URL
+}
+
+function greetingName(opts: { addressAs?: string; clientName?: string }): string {
+  const candidate = (opts.addressAs ?? "").trim();
+  if (candidate) return candidate;
+  return (opts.clientName ?? "").trim().split(/\s+/)[0] ?? "";
 }
 
 function pdfAttachment(proposalId: string, pdf: Buffer | null) {
@@ -175,7 +184,7 @@ async function sendClientConfirmation(opts: EmailSendOpts, pdf: Buffer | null) {
 
   try {
     const resend = new Resend(apiKey);
-    const firstName = (opts.clientName || "").split(" ")[0];
+    const firstName = greetingName(opts);
     const attachments = [pdfAttachment(opts.proposalId, pdf)].filter(Boolean) as {
       filename: string;
       content: string;
@@ -313,6 +322,7 @@ export async function POST(req: NextRequest) {
     const emailOpts: EmailSendOpts = {
       proposalId: proposalSlug,
       clientName: name || proposal.clientName,
+      addressAs: proposal.addressAs ?? "",
       signerEmail: email,
       pricingAmount: proposal.pricingAmount ?? "",
       pricingCurrency: proposal.pricingCurrency ?? "",
