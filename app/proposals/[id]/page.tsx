@@ -36,7 +36,7 @@ export default async function ProposalPage({ params }: Props) {
 
   return (
     <>
-      <ProposalClient proposal={proposal} preparerSignature={preparerSignature} isAdmin={admin} />
+      <ProposalClient proposal={proposal} preparerSignature={preparerSignature} />
       {admin && (
         <Link
           href={`/proposals/${id}/edit`}

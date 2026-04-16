@@ -11,7 +11,6 @@ function buildProposalHTML(
   proposal: Proposal,
   sigDataUrl: string,
   preparerSig: string | null,
-  opts: { isAdmin?: boolean } = {}
 ) {
   const isSigned = proposal.status === "signed" && !!proposal.signatureDataUrl;
   const signedImg = proposal.signatureDataUrl ?? sigDataUrl ?? "";
@@ -170,9 +169,7 @@ function buildProposalHTML(
   .signed-download { display: inline-flex; align-items: center; gap: 8px; background: var(--brand-primary); color: white; font-weight: 700; font-size: 14px; padding: 12px 22px; border-radius: 8px; text-decoration: none; border: none; cursor: pointer; transition: opacity 0.15s; }
   .signed-download:hover { opacity: 0.9; }
   .signed-download svg { width: 16px; height: 16px; }
-  .reset-fab { position: fixed; bottom: 24px; right: 168px; z-index: 9999; background: #ef4444; color: white; border: none; border-radius: 50%; width: 56px; height: 56px; cursor: pointer; box-shadow: 0 4px 16px rgba(239,68,68,0.35); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; }
-  .reset-fab:hover { opacity: 0.9; }
-  @media print { .signed-banner, .reset-fab { display: none !important; } .signed-image-wrap { border-bottom: 1px solid #0f172a; } }
+  @media print { .signed-banner { display: none !important; } .signed-image-wrap { border-bottom: 1px solid #0f172a; } }
 </style>
 </head>
 <body>
@@ -185,7 +182,6 @@ ${isSigned ? "" : `<a class="floating-download no-print" href="javascript:window
   </svg>
   <span class="floating-download-tooltip">Download PDF</span>
 </a>`}
-${isSigned && opts.isAdmin ? `<button type="button" class="reset-fab no-print" id="resetSignatureBtn" title="Reset signature (admin only)">RESET</button>` : ""}
 
 <!-- PAGE 1 - COVER -->
 <div class="page">
@@ -362,35 +358,6 @@ ${isSigned && opts.isAdmin ? `<button type="button" class="reset-fab no-print" i
 <script>
 (function() {
   var IS_SIGNED = ${isSigned ? "true" : "false"};
-  var IS_ADMIN = ${opts.isAdmin ? "true" : "false"};
-
-  // Admin reset button (only rendered when signed + admin)
-  if (IS_SIGNED && IS_ADMIN) {
-    var resetBtn = document.getElementById('resetSignatureBtn');
-    if (resetBtn) {
-      resetBtn.addEventListener('click', async function() {
-        if (!confirm('Reset this signature? This clears the signature on the proposal AND deletes the matching row in proposal_signatures. Admin testing only.')) return;
-        resetBtn.disabled = true;
-        resetBtn.textContent = '...';
-        try {
-          var res = await fetch('/api/proposals/${proposal.id}/reset-signature', { method: 'POST' });
-          var data = await res.json().catch(function(){ return {}; });
-          if (!res.ok) {
-            alert('Reset failed: ' + (data.error || res.status));
-            resetBtn.disabled = false;
-            resetBtn.textContent = 'RESET';
-            return;
-          }
-          window.location.reload();
-        } catch(e) {
-          alert('Reset error: ' + e);
-          resetBtn.disabled = false;
-          resetBtn.textContent = 'RESET';
-        }
-      });
-    }
-  }
-
   if (IS_SIGNED) return; // no sig-pad wiring on signed proposals
 
   var canvas = document.getElementById('sigPad');
@@ -482,11 +449,9 @@ ${isSigned && opts.isAdmin ? `<button type="button" class="reset-fab no-print" i
 export default function ProposalClient({
   proposal,
   preparerSignature,
-  isAdmin = false,
 }: {
   proposal: Proposal;
   preparerSignature?: string | null;
-  isAdmin?: boolean;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [sigDataUrl] = useState("");
@@ -495,7 +460,6 @@ export default function ProposalClient({
     proposal,
     sigDataUrl,
     preparerSignature ?? null,
-    { isAdmin }
   );
 
   return (
