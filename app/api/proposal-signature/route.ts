@@ -167,11 +167,12 @@ async function sendAdminNotification(opts: EmailSendOpts, pdf: Buffer | null) {
 
 async function sendClientConfirmation(opts: EmailSendOpts, pdf: Buffer | null) {
   const apiKey = process.env.RESEND_API_KEY;
-  // Uses the same verified sender so Resend's SPF/DKIM applies. Body makes
-  // it explicit that replies won't reach anyone.
-  const from = process.env.CLIENT_EMAIL_FROM
-    ?? process.env.NOTIFY_EMAIL_FROM
-    ?? "AILevelUp <proposals@ailevelup.ca>";
+  // Uses the same verified sender address so Resend's SPF/DKIM applies,
+  // but brands the display name as AILevelUp (not "Proposals"). The admin
+  // notification keeps its own display name via NOTIFY_EMAIL_FROM; we
+  // intentionally do NOT inherit from that here — client-facing mail
+  // should always show the company name.
+  const from = process.env.CLIENT_EMAIL_FROM ?? "AILevelUp <proposals@ailevelup.ca>";
   const replyTo = process.env.CLIENT_EMAIL_REPLY_TO ?? "praveen@ailevelup.ca";
 
   if (!apiKey) {
