@@ -269,7 +269,7 @@ ${isSigned ? "" : `<a class="floating-download no-print" href="javascript:window
 
   <div class="section">
     <div class="section-num">07</div>
-    <h2>What We Need From ${(proposal.clientName || "").split(' ')[0]}</h2>
+    <h2>What We Need From ${greetingName || "You"}</h2>
     <div class="scope-grid">
       <div class="scope-col included"><h4>✓ To get started</h4><ul>${needItems}</ul></div>
       <div class="scope-col excluded">
