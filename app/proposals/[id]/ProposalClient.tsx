@@ -26,6 +26,15 @@ function buildProposalHTML(
   const signerDisplayName = (proposal.signerFullName ?? "").trim()
     || proposal.clientName
     || "";
+  // Show the business/company name as a second line only when it's
+  // distinct from the signer (i.e., client is a business and signerFullName
+  // is set to a different human name). For individuals this is empty.
+  const signerCompanyLine =
+    (proposal.signerFullName ?? "").trim() &&
+    (proposal.clientName ?? "").trim() &&
+    proposal.signerFullName!.trim() !== proposal.clientName!.trim()
+      ? proposal.clientName
+      : "";
   const deliverablesRows = proposal.deliverables?.map(d =>
     `<tr><td><strong>${d.deliverable}</strong></td><td>${d.details}</td></tr>`
   ).join("") ?? "";
@@ -143,6 +152,14 @@ function buildProposalHTML(
   .signature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; margin-top: 24px; }
   .signature-item .name { font-weight: 600; color: var(--brand-dark); margin-bottom: 4px; }
   .signature-item .role { font-size: 13px; color: var(--text-secondary); margin-bottom: 32px; }
+  /* Secondary line under .name for the client-side business name, used
+     when signerFullName is a different human than clientName. Slim margin
+     so total height stays close to the preparer block on the other side. */
+  .signature-item .signer-company { font-size: 13px; color: var(--text-secondary); margin-bottom: 2px; }
+  /* When the company line is present, tighten the role label's bottom
+     margin so the signature underline still roughly aligns across both
+     columns. */
+  .signature-item .signer-company + .role { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); margin-bottom: 14px; }
   .signature-line { border-bottom: 1px solid var(--text-primary); margin-bottom: 6px; height: 36px; }
   .signature-item .date-label { font-size: 12px; color: var(--text-muted); }
   .sig-pad-wrap { border: 2px dashed var(--brand-primary); border-radius: 8px; background: #f8fafc; margin-bottom: 8px; position: relative; overflow: hidden; }
@@ -313,6 +330,7 @@ ${isSigned ? "" : `<a class="floating-download no-print" href="javascript:window
     <div class="signature-grid">
       <div class="signature-item">
         <div class="name">${signerDisplayName}</div>
+        ${signerCompanyLine ? `<div class="signer-company">${signerCompanyLine}</div>` : ""}
         <div class="role">Client</div>
         ${isSigned ? `
           <div class="signed-image-wrap">
